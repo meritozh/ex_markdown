@@ -2,6 +2,7 @@ use nom::{
     branch::alt,
     character::complete::{line_ending, space1},
     combinator::{map, value},
+    error::context,
     multi::many1,
     sequence::preceded,
     IResult,
@@ -14,10 +15,13 @@ use nom::{error::ErrorKind, Err};
 
 /// Recognize `(#+)<space><text>\n` style markdown input.
 fn blank_line(input: &str) -> IResult<&str, &str> {
-    alt((
-        value("", many1(line_ending)),
-        preceded(space1, value("", many1(line_ending))),
-    ))(input)
+    context(
+        "blank_line",
+        alt((
+            value("", many1(line_ending)),
+            preceded(space1, value("", many1(line_ending))),
+        )),
+    )(input)
 }
 
 #[test]

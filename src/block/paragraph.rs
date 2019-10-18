@@ -1,6 +1,7 @@
 use nom::{
     character::complete::{line_ending, not_line_ending},
     combinator::map,
+    error::context,
     sequence::terminated,
     IResult,
 };
@@ -9,7 +10,7 @@ use crate::token::{Block, Paragraph};
 
 /// Recognize any characters until EOL or no more data.
 fn paragraph(input: &str) -> IResult<&str, &str> {
-    not_line_ending(input)
+    context("paragraph", not_line_ending)(input)
 }
 
 #[test]

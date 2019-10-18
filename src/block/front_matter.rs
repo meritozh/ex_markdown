@@ -1,10 +1,13 @@
 use nom::{
     bytes::complete::tag,
     character::complete::line_ending,
-    error::{context, ErrorKind, ParseError},
+    combinator::map,
+    error::{context, ErrorKind},
     sequence::{preceded, terminated, tuple},
     Err, IResult,
 };
+
+use crate::token::{Block, FrontMatter};
 
 /// Match front matter:
 ///
@@ -51,4 +54,10 @@ fn front_matter_test() {
         front_matter("123"),
         Err(Err::Error(("123", ErrorKind::Tag)))
     );
+}
+
+pub fn parse_front_matter(input: &str) -> IResult<&str, Block> {
+    map(front_matter, |content| {
+        Block::FrontMatter(FrontMatter { child: content })
+    })(input)
 }

@@ -6,6 +6,7 @@ pub enum Token<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Block<'a> {
+    FrontMatter(FrontMatter<'a>),
     Paragraph(Paragraph<'a>),
     BlockQuote(Paragraph<'a>),
     List(List<'a>),
@@ -15,6 +16,12 @@ pub enum Block<'a> {
     LatexBlock(LatexBlock<'a>),
     RefDetail(RefDetail<'a>),
     BlankLine,
+    ThematicBreak,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct FrontMatter<'a> {
+    pub child: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

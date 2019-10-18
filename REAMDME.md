@@ -10,6 +10,10 @@ This is not compatible with CommonMark specification. (keep it simple)
 
 - [x] heading
 - [x] paragraph
+- [x] thematic break
+- [x] blank line
+- [x] front matter (except yaml parsing)
+- [x] code block
 
 ### Inline
 

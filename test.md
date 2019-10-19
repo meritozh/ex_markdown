@@ -26,3 +26,17 @@ italic: _lalala_
 $$
 n = 1 + 3;
 $$
+
+> blockquote test
+> lalala 
+
+1. one
+2. two
+3. three
+
+- lalala
+- hahaha
+  - indentation
+
+- [ ] task 
+- [x] task checked

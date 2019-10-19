@@ -8,7 +8,7 @@ pub enum Token<'a> {
 pub enum Block<'a> {
     FrontMatter(FrontMatter<'a>),
     Paragraph(Paragraph<'a>),
-    BlockQuote(Paragraph<'a>),
+    BlockQuote(BlockQuote<'a>),
     List(List<'a>),
     Heading(Heading<'a>),
     Command(Command<'a>),
@@ -33,20 +33,21 @@ pub struct Paragraph<'a> {
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockQuote<'a> {
     // Vec here, because it allow empty line.
-    pub children: Vec<Block<'a>>,
+    pub child: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ListStyle {
-    Number(i32),
+    Number(u32),
     Bullet,
-    Task,
+    Task(bool),
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct List<'a> {
     pub style: ListStyle,
-    pub children: Vec<Block<'a>>,
+    pub indentation: usize,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

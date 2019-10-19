@@ -13,3 +13,7 @@
 ### Inline
 
 - [x] italic
+
+## TODO
+
+1. `line_ending` in block parser should be optional.

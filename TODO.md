@@ -9,7 +9,7 @@
 - [x] front matter (except yaml parsing)
 - [x] code block
 - [x] latex block
-- [x] blockquote (except indented blockqoute)
+- [x] blockquote (except indented blockqoute and empty blockquote)
 - [x] list
 - [x] task
 - [ ] command

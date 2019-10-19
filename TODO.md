@@ -9,10 +9,18 @@
 - [x] front matter (except yaml parsing)
 - [x] code block
 - [x] latex block
+- [x] blockquote (except indented blockqoute)
+- [x] list
+- [x] task
+- [ ] command
+- [ ] reference
+- [ ] table of content
 
 ### Inline
 
 - [x] italic
+- [ ] bold
+- [ ] text
 
 ## TODO
 

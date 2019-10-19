@@ -1,7 +1,7 @@
 [package]
 name = "ex_markdown"
 version = "0.1.0"
-authors = ["gaowanqiu <gaowanqiu@bytedance.com>"]
+authors = ["meritozh <ah841814092@gmail.com>"]
 edition = "2018"
 
 [dependencies]

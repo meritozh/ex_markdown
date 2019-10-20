@@ -17,6 +17,7 @@ pub enum Block<'a> {
     RefDetail(RefDetail<'a>),
     BlankLine,
     ThematicBreak,
+    TOC,
 }
 
 #[derive(Debug, PartialEq, Eq)]

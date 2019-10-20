@@ -13,7 +13,7 @@
 - [x] list
 - [x] task
 - [x] table of content
-- [ ] footnote
+- [x] footnote
 - [ ] command
 - [ ] container
 - [ ] reference

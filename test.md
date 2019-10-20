@@ -48,3 +48,9 @@ $$
 ::: error
 here is an error message.
 :::
+
+
+{{ js
+let num = 1;
+let add = (x) { return x + 1; };
+}}

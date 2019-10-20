@@ -73,18 +73,8 @@ pub struct Heading<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum CommandTag {
-    Table,
-    Chart,
-    Youtube,
-    Twitter,
-    Bilibili,
-    Weibo,
-}
-
-#[derive(Debug, PartialEq, Eq)]
 pub struct Command<'a> {
-    pub tag: CommandTag,
+    pub tag: &'a str,
     pub content: &'a str,
 }
 

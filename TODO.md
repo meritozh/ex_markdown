@@ -14,7 +14,7 @@
 - [x] task
 - [x] table of content
 - [x] footnote
-- [ ] command
+- [x] command
 - [x] container
 - [ ] reference
 

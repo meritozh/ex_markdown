@@ -14,7 +14,7 @@
 - [x] task
 - [ ] command
 - [ ] reference
-- [ ] table of content
+- [x] table of content
 
 ### Inline
 

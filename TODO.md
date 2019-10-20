@@ -16,7 +16,7 @@
 - [x] footnote
 - [x] command
 - [x] container
-- [ ] reference
+- [x] reference
 
 ### Inline
 

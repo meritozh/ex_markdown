@@ -91,8 +91,8 @@ pub struct LatexBlock<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct RefDetail<'a> {
-    pub symvbol: RefSymbol<'a>,
-    pub children: Vec<Inline<'a>>,
+    pub reference: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

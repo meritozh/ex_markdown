@@ -15,6 +15,7 @@ pub enum Block<'a> {
     CodeBlock(CodeBlock<'a>),
     LatexBlock(LatexBlock<'a>),
     RefDetail(RefDetail<'a>),
+    Footnote(Footnote<'a>),
     BlankLine,
     ThematicBreak,
     TOC,
@@ -42,6 +43,12 @@ pub enum ListStyle {
     Number(u32),
     Bullet,
     Task(bool),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Footnote<'a> {
+    pub tag: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

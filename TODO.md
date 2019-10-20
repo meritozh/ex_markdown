@@ -15,7 +15,7 @@
 - [x] table of content
 - [x] footnote
 - [ ] command
-- [ ] container
+- [x] container
 - [ ] reference
 
 ### Inline
@@ -34,5 +34,6 @@
 ## TODO
 
 1. the trailing `line_ending` in all block parsers should be optional.
-2. error handling when`digit.parser` in _list.rs_
+2. error handling when`digit.parser` in _list.rs_.
 3. ignorable indentation for some block parsers.
+4. all parsers add `context`.

@@ -1,6 +1,7 @@
 pub(crate) mod blank_line;
 pub(crate) mod blockquote;
 pub(crate) mod code_block;
+pub(crate) mod container;
 pub(crate) mod footnote;
 pub(crate) mod front_matter;
 pub(crate) mod heading;
@@ -15,9 +16,9 @@ use nom::branch::alt;
 use crate::{
     block::{
         blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
-        footnote::parse_footnote, front_matter::parse_front_matter, heading::parse_heading,
-        latex_block::parse_latex_block, list::parse_list, paragraph::parse_paragraph,
-        thematic_break::parse_thematic_break, toc::parse_toc,
+        container::parse_container, footnote::parse_footnote, front_matter::parse_front_matter,
+        heading::parse_heading, latex_block::parse_latex_block, list::parse_list,
+        paragraph::parse_paragraph, thematic_break::parse_thematic_break, toc::parse_toc,
     },
     token::Token,
     Parser,
@@ -32,6 +33,7 @@ pub fn parse_block<'a>(parser: &mut Parser<'a>, input: &'a str) {
             parse_front_matter,
             parse_blank_line,
             parse_thematic_break,
+            parse_container,
             parse_code_block,
             parse_latex_block,
             parse_list,

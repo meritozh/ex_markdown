@@ -44,3 +44,7 @@ $$
 - [x] task checked
 
 [^test]: test here
+
+::: error
+here is an error message.
+:::

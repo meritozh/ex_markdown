@@ -16,9 +16,16 @@ pub enum Block<'a> {
     LatexBlock(LatexBlock<'a>),
     RefDetail(RefDetail<'a>),
     Footnote(Footnote<'a>),
+    Container(Container<'a>),
     BlankLine,
     ThematicBreak,
     TOC,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Container<'a> {
+    pub title: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

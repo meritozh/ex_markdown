@@ -188,7 +188,7 @@ pub struct Ruby<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Span<'a> {
-    pub content: &'a str,
+    pub child: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

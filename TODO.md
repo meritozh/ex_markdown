@@ -17,10 +17,12 @@
 - [x] command
 - [x] container
 - [x] reference
+- [ ] table
 
 ### Inline
 
 - [x] italic
+- [x] span
 - [ ] bold
 - [ ] text
 - [ ] emphasis

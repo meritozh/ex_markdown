@@ -14,10 +14,11 @@ use crate::token::{Bold, Inline};
 
 fn bold(input: &str) -> IResult<&str, &str> {
     context(
-        "italic",
+        "bold",
         delimited(
             // TODO: We need only consume last `_` if it is an sequence.
             char('*'),
+            // TODO: Change implementation way.
             verify(take_till1(|ch| ch == '*'), |s: &str| {
                 space1::<_, (&str, ErrorKind)>(s).is_err()
             }),
@@ -33,6 +34,7 @@ fn bold_test() {
         bold("**test*"),
         Err(Err::Error(("*test*", ErrorKind::TakeTill1)))
     );
+    // FIXME: It should be acceptable in new implementation way.
     assert_eq!(bold("*  *"), Err(Err::Error(("  *", ErrorKind::Verify))));
 }
 

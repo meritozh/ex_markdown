@@ -35,8 +35,7 @@ pub struct FrontMatter<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Paragraph<'a> {
-    // pub children: Vec<Inline<'a>>,
-    pub child: &'a str,
+    pub children: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -112,6 +111,7 @@ pub enum Inline<'a> {
     Subscript(Subscript<'a>),
     Superscript(Superscript<'a>),
     Latex(Latex<'a>),
+    Placeholder,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -125,7 +125,6 @@ pub enum EmphasisStyle {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Emphasis<'a> {
-    pub leading: Text<'a>,
     pub child: Text<'a>,
     pub styles: Vec<EmphasisStyle>,
 }

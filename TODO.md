@@ -21,11 +21,9 @@
 
 ### Inline
 
-- [x] italic
 - [x] span
-- [ ] bold
-- [ ] text
-- [ ] emphasis (consist with italic and bold)
+- [x] text
+- [x] emphasis (contains italic and bold)
 - [ ] delete
 - [ ] sub
 - [ ] sup

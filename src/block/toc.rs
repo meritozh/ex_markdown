@@ -1,12 +1,12 @@
 use nom::{
-    bytes::complete::tag, character::complete::line_ending, combinator::map, sequence::terminated,
-    IResult,
+    branch::alt, bytes::complete::tag, character::complete::line_ending, combinator::map,
+    error::context, sequence::terminated, IResult,
 };
 
 use crate::token::Block;
 
 fn toc(input: &str) -> IResult<&str, &str> {
-    tag("[TOC]")(input)
+    context("toc", alt((tag("[toc]"), tag("[TOC]"))))(input)
 }
 
 pub fn parse_toc(input: &str) -> IResult<&str, Block> {

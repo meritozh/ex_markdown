@@ -3,6 +3,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, digit1, not_line_ending},
     combinator::{map, map_parser, value},
+    error::context,
     multi::many0_count,
     sequence::tuple,
     IResult,
@@ -11,27 +12,37 @@ use nom::{
 use crate::token::{Block, List, ListStyle};
 
 fn bullet_list(input: &str) -> IResult<&str, (&str, usize)> {
-    map_parser(not_line_ending, |content| {
-        tuple((many0_count(char(' ')), tag("- ")))(content)
-            .map(|(remain, (count, _))| ("", (remain, count)))
-    })(input)
+    context(
+        "bullet_list",
+        map_parser(not_line_ending, |content| {
+            tuple((many0_count(char(' ')), tag("- ")))(content)
+                .map(|(remain, (count, _))| ("", (remain, count)))
+        }),
+    )(input)
 }
 
 fn number_list(input: &str) -> IResult<&str, (&str, u32, usize)> {
-    map_parser(not_line_ending, |content: &str| {
-        tuple((many0_count(char(' ')), digit1, tag(". ")))(content)
-            .map(|(remain, (count, digit, _))| ("", (remain, digit.parse::<u32>().unwrap(), count)))
-    })(input)
+    context(
+        "number_list",
+        map_parser(not_line_ending, |content: &str| {
+            tuple((many0_count(char(' ')), digit1, tag(". ")))(content).map(
+                |(remain, (count, digit, _))| ("", (remain, digit.parse::<u32>().unwrap(), count)),
+            )
+        }),
+    )(input)
 }
 
 fn task_list(input: &str) -> IResult<&str, (&str, usize, bool)> {
-    map_parser(not_line_ending, |content| {
-        tuple((
-            many0_count(char(' ')),
-            alt((value(false, tag("- [ ] ")), value(true, tag("- [x] ")))),
-        ))(content)
-        .map(|(remain, (count, checked))| ("", (remain, count, checked)))
-    })(input)
+    context(
+        "task_list",
+        map_parser(not_line_ending, |content| {
+            tuple((
+                many0_count(char(' ')),
+                alt((value(false, tag("- [ ] ")), value(true, tag("- [x] ")))),
+            ))(content)
+            .map(|(remain, (count, checked))| ("", (remain, count, checked)))
+        }),
+    )(input)
 }
 
 #[test]

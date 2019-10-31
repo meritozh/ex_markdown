@@ -2,6 +2,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{anychar, line_ending, not_line_ending},
     combinator::map,
+    error::context,
     multi::many_till,
     sequence::{preceded, terminated, tuple},
     IResult,
@@ -10,14 +11,17 @@ use nom::{
 use crate::token::{Block, Footnote};
 
 fn footnote(input: &str) -> IResult<&str, (&str, &str)> {
-    preceded(
-        tag("[^"),
-        tuple((
-            map(many_till(anychar, tag("]: ")), |(matched, _)| {
-                &input[2..2 + matched.len()]
-            }),
-            not_line_ending,
-        )),
+    context(
+        "footnote",
+        preceded(
+            tag("[^"),
+            tuple((
+                map(many_till(anychar, tag("]: ")), |(matched, _)| {
+                    &input[2..2 + matched.len()]
+                }),
+                not_line_ending,
+            )),
+        ),
     )(input)
 }
 

@@ -21,6 +21,8 @@ If we do it, we just comsume our timeslice, that's the `point`.
 
 italic: _lalala_
 
+italic and bold: ***hahaha***
+
 ```c++
 1 + 2 = 3;
 ```

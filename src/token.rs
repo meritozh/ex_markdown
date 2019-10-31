@@ -100,9 +100,7 @@ pub enum Inline<'a> {
     // Raw text without any style, which mean it's the latest node.
     Text(Text<'a>),
     Link(Link<'a>),
-    Bold(Bold<'a>),
     Emphasis(Emphasis<'a>),
-    Italic(Italic<'a>),
     Highlight(Highlight<'a>),
     Deletion(Deletion<'a>),
     Underline(Underline<'a>),
@@ -117,6 +115,22 @@ pub enum Inline<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub enum EmphasisStyle {
+    Bold,
+    Italic,
+    Underline,
+    Highlight,
+    Deletion,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Emphasis<'a> {
+    pub leading: Text<'a>,
+    pub child: Text<'a>,
+    pub styles: Vec<EmphasisStyle>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct Text<'a> {
     pub content: &'a str,
 }
@@ -126,24 +140,6 @@ pub struct Link<'a> {
     // `title` can be empty.
     pub title: Option<&'a str>,
     pub url: &'a str,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Bold<'a> {
-    // TODO: make it can combine with Emphasis.
-    pub content: &'a str,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Emphasis<'a> {
-    // TODO: make it can combine with Emphasis.
-    pub content: &'a str,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Italic<'a> {
-    // TODO: make it can combine with Emphasis.
-    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

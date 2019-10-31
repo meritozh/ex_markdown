@@ -25,7 +25,7 @@
 - [x] span
 - [ ] bold
 - [ ] text
-- [ ] emphasis
+- [ ] emphasis (consist with italic and bold)
 - [ ] delete
 - [ ] sub
 - [ ] sup

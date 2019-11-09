@@ -24,7 +24,8 @@
 - [x] span
 - [x] text
 - [x] emphasis (contains italic and bold)
-- [ ] strikethrough
+- [x] strikethrough
+- [x] latex
 - [ ] sub
 - [ ] sup
 - [ ] ins

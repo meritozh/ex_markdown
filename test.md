@@ -42,7 +42,7 @@ $$
 - hahaha
   - indentation
 
-- [ ] task 
+- [ ] task
 - [x] task checked
 
 [^test]: test here

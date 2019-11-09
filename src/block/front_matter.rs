@@ -22,7 +22,7 @@ use crate::token::{Block, FrontMatter};
 pub fn front_matter<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
     // TODO: Change implementation
     let content = move |input: &'a str| {
-        let ending = tuple::<_, _, ((&str, ErrorKind)), _>((line_ending, tag("---"), line_ending));
+        let ending = tuple::<_, _, (&str, ErrorKind), _>((line_ending, tag("---"), line_ending));
         let mut iter = input.chars().enumerate();
         loop {
             match iter.next() {

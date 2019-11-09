@@ -8,6 +8,9 @@ use nom::{
     IResult,
 };
 
+#[cfg(test)]
+use nom::{error::ErrorKind, Err};
+
 use crate::{
     inline::text::text,
     token::{Inline, Strikethrough},
@@ -25,7 +28,7 @@ fn strikethrough(input: &str) -> IResult<&str, (&str, &str)> {
                     ),
                     many_till(anychar, many1_count(tag("~"))),
                 )),
-                |((_, count1), (_, count2))| count1 == count2,
+                |((_, count1), (_, count2))| *count1 >= 2 && *count2 >= 2 && count1 == count2,
             ),
             |((count1, count2), (content, _))| {
                 (
@@ -40,7 +43,10 @@ fn strikethrough(input: &str) -> IResult<&str, (&str, &str)> {
 #[test]
 fn strikethrough_test() {
     assert_eq!(strikethrough("~~test~~"), Ok(("", ("", "test"))));
-    assert_eq!(strikethrough("~test~"), Ok(("", ("", "test"))));
+    assert_eq!(
+        strikethrough("~test~"),
+        Err(Err::Error(("~test~", ErrorKind::Verify)))
+    );
 }
 
 pub fn parse_strikethrough(input: &str) -> IResult<&str, (Inline, Inline)> {

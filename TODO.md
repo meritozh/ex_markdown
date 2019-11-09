@@ -24,7 +24,7 @@
 - [x] span
 - [x] text
 - [x] emphasis (contains italic and bold)
-- [ ] delete
+- [ ] strikethrough
 - [ ] sub
 - [ ] sup
 - [ ] ins
@@ -37,3 +37,4 @@
 2. error handling when`digit.parser` in _list.rs_.
 3. ignorable indentation for some block parsers.
 4. all parsers add `context`.
+5. make inline parser recursive.

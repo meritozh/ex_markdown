@@ -1,4 +1,5 @@
 use nom::{
+    branch::alt,
     bytes::complete::tag,
     character::complete::anychar,
     combinator::{map, peek},
@@ -15,20 +16,26 @@ use crate::{
     token::{Emphasis, EmphasisStyle, Inline},
 };
 
+fn factory<'a>(
+    symbol: &'static str,
+) -> impl Fn(&'a str) -> IResult<&'a str, ((usize, usize), (usize, usize))> {
+    tuple((
+        map(
+            many_till(anychar, many1_count(tag(symbol))),
+            |(leading, count)| (leading.len(), count),
+        ),
+        peek(map(
+            many_till(anychar, many1_count(tag(symbol))),
+            |(vec, count)| (vec.len(), count),
+        )),
+    ))
+}
+
 fn emphasis(input: &str) -> IResult<&str, (&str, &str, Vec<EmphasisStyle>)> {
     context(
         "emphsis",
         map(
-            tuple((
-                map(
-                    many_till(anychar, many1_count(tag("*"))),
-                    |(leading, count)| (leading.len(), count),
-                ),
-                peek(map(
-                    many_till(anychar, many1_count(tag("*"))),
-                    |(vec, count)| (vec.len(), count),
-                )),
-            )),
+            alt((factory("*"), factory("_"))),
             |((count1, count2), (count3, count4))| {
                 let delimit = cmp::min(count2, count4);
                 let leading = if count2 <= delimit {
@@ -78,11 +85,11 @@ fn emphasis_test() {
         ))
     );
     assert_eq!(
-        emphasis("123***test***"),
+        emphasis("123****test***"),
         Ok((
             "",
             (
-                "123",
+                "123*",
                 "test",
                 vec![EmphasisStyle::Italic, EmphasisStyle::Bold]
             )

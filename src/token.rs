@@ -101,7 +101,7 @@ pub enum Inline<'a> {
     Link(Link<'a>),
     Emphasis(Emphasis<'a>),
     Highlight(Highlight<'a>),
-    Deletion(Deletion<'a>),
+    Strikethrough(Strikethrough<'a>),
     Underline(Underline<'a>),
     Diff(Diff<'a>),
     Image(Image<'a>),
@@ -118,9 +118,6 @@ pub enum Inline<'a> {
 pub enum EmphasisStyle {
     Bold,
     Italic,
-    Underline,
-    Highlight,
-    Deletion,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -147,8 +144,8 @@ pub struct Highlight<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Deletion<'a> {
-    pub children: Vec<Inline<'a>>,
+pub struct Strikethrough<'a> {
+    pub child: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

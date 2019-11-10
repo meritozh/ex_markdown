@@ -26,10 +26,10 @@
 - [x] emphasis (contains italic and bold)
 - [x] strikethrough
 - [x] latex
-- [ ] sub
-- [ ] sup
-- [ ] ins
-- [ ] dec
+- [x] diff
+- [x] subscript
+- [x] superscript
+- [ ] ruby
 - [ ] mark
 
 ## TODO
@@ -39,3 +39,5 @@
 3. ignorable indentation for some block parsers.
 4. all parsers add `context`.
 5. make inline parser recursive.
+6. all string should be hold by `Text` token.
+7. simply inline parse, only support one or 

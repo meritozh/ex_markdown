@@ -196,12 +196,12 @@ pub struct Reference<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Subscript<'a> {
-    pub content: &'a str,
+    pub child: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Superscript<'a> {
-    pub content: &'a str,
+    pub child: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

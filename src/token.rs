@@ -162,7 +162,7 @@ pub enum DiffStyle {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Diff<'a> {
     pub style: DiffStyle,
-    pub children: Vec<Inline<'a>>,
+    pub child: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

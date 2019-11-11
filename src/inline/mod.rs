@@ -22,7 +22,7 @@ pub fn parse_inline(input: &str) -> Vec<Inline> {
     let mut cur_input = input;
     let mut tokens: Vec<Inline> = Vec::new();
     while !cur_input.is_empty() {
-        let (next_input, (token1, token2)) = alt((
+        let (next_input, mut tks) = alt((
             parse_span,
             parse_latex,
             parse_diff,
@@ -33,10 +33,7 @@ pub fn parse_inline(input: &str) -> Vec<Inline> {
             parse_text,
         ))(cur_input)
         .unwrap();
-        vec![token1, token2].into_iter().for_each(|tk| match tk {
-            Inline::Placeholder => {}
-            _ => tokens.push(tk),
-        });
+        tokens.append(&mut tks);
         cur_input = next_input;
     }
     tokens

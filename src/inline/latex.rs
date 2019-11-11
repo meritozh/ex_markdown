@@ -57,11 +57,11 @@ fn latex_test() {
     assert_eq!(latex("$$"), Err(Err::Error(("", ErrorKind::Eof))));
 }
 
-pub fn parse_latex(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_latex(input: &str) -> IResult<&str, Vec<Inline>> {
     map(latex, |(leading, content)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Latex(Latex { content }),
-        )
+        ]
     })(input)
 }

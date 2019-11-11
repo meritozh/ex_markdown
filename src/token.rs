@@ -111,7 +111,6 @@ pub enum Inline<'a> {
     Subscript(Subscript<'a>),
     Superscript(Superscript<'a>),
     Latex(Latex<'a>),
-    Placeholder,
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -49,13 +49,13 @@ fn superscript_test() {
     );
 }
 
-pub fn parse_superscript(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_superscript(input: &str) -> IResult<&str, Vec<Inline>> {
     map(superscript, |(leading, content)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Superscript(Superscript {
                 child: text(content),
             }),
-        )
+        ]
     })(input)
 }

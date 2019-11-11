@@ -62,14 +62,14 @@ fn diff_test() {
     assert_eq!(diff("--test--"), Ok(("", ("", "test", DiffStyle::Minus))));
 }
 
-pub fn parse_diff(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_diff(input: &str) -> IResult<&str, Vec<Inline>> {
     map(diff, |(leading, content, style)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Diff(Diff {
                 child: text(content),
                 style,
             }),
-        )
+        ]
     })(input)
 }

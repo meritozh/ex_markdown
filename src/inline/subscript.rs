@@ -49,13 +49,13 @@ fn subscript_test() {
     );
 }
 
-pub fn parse_subscript(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_subscript(input: &str) -> IResult<&str, Vec<Inline>> {
     map(subscript, |(leading, content)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Subscript(Subscript {
                 child: text(content),
             }),
-        )
+        ]
     })(input)
 }

@@ -97,14 +97,14 @@ fn emphasis_test() {
     );
 }
 
-pub fn parse_emphasis(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
     map(emphasis, |(leading, content, styles)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Emphasis(Emphasis {
                 child: text(content),
                 styles,
             }),
-        )
+        ]
     })(input)
 }

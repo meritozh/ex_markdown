@@ -57,13 +57,13 @@ fn span_test() {
     assert_eq!(span("``"), Err(Err::Error(("", ErrorKind::Eof))));
 }
 
-pub fn parse_span(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_span(input: &str) -> IResult<&str, Vec<Inline>> {
     map(span, |(leading, content)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Span(Span {
                 child: text(content),
             }),
-        )
+        ]
     })(input)
 }

@@ -49,13 +49,13 @@ fn strikethrough_test() {
     );
 }
 
-pub fn parse_strikethrough(input: &str) -> IResult<&str, (Inline, Inline)> {
+pub fn parse_strikethrough(input: &str) -> IResult<&str, Vec<Inline>> {
     map(strikethrough, |(leading, content)| {
-        (
+        vec![
             Inline::Text(text(leading)),
             Inline::Strikethrough(Strikethrough {
                 child: text(content),
             }),
-        )
+        ]
     })(input)
 }

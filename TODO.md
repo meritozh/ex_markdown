@@ -29,6 +29,8 @@
 - [x] diff
 - [x] subscript
 - [x] superscript
+- [x] image
+- [ ] link
 - [ ] ruby
 - [ ] mark
 
@@ -40,4 +42,4 @@
 4. all parsers add `context`.
 5. make inline parser recursive.
 6. all string should be hold by `Text` token.
-7. simply inline parse, only support one or 
+7. `many_till` or `terminated`

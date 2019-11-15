@@ -10,7 +10,7 @@ use nom::{
 };
 
 use crate::{
-    inline::text::text,
+    inline::parse_inline,
     token::{Diff, DiffStyle, Inline},
 };
 
@@ -65,11 +65,14 @@ fn diff_test() {
 pub fn parse_diff(input: &str) -> IResult<&str, Vec<Inline>> {
     map(diff, |(leading, content, style)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Diff(Diff {
-                child: text(content),
+            parse_inline(leading),
+            vec![Inline::Diff(Diff {
+                children: parse_inline(content),
                 style,
-            }),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

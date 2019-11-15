@@ -12,7 +12,7 @@ use nom::{
 use nom::{error::ErrorKind, Err};
 
 use crate::{
-    inline::text::text,
+    inline::{parse_inline, text::text},
     token::{Inline, Latex},
 };
 
@@ -60,8 +60,13 @@ fn latex_test() {
 pub fn parse_latex(input: &str) -> IResult<&str, Vec<Inline>> {
     map(latex, |(leading, content)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Latex(Latex { content }),
+            parse_inline(leading),
+            vec![Inline::Latex(Latex {
+                child: text(content),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

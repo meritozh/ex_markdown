@@ -12,7 +12,7 @@ use nom::{
 use nom::{error::ErrorKind, Err};
 
 use crate::{
-    inline::text::text,
+    inline::{parse_inline, text::text},
     token::{Inline, Superscript},
 };
 
@@ -52,10 +52,13 @@ fn superscript_test() {
 pub fn parse_superscript(input: &str) -> IResult<&str, Vec<Inline>> {
     map(superscript, |(leading, content)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Superscript(Superscript {
+            parse_inline(leading),
+            vec![Inline::Superscript(Superscript {
                 child: text(content),
-            }),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

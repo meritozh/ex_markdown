@@ -12,7 +12,7 @@ use nom::{
 use nom::{error::ErrorKind, Err};
 
 use crate::{
-    inline::text::text,
+    inline::{parse_inline, text::text},
     token::{Inline, Subscript},
 };
 
@@ -52,10 +52,13 @@ fn subscript_test() {
 pub fn parse_subscript(input: &str) -> IResult<&str, Vec<Inline>> {
     map(subscript, |(leading, content)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Subscript(Subscript {
+            parse_inline(leading),
+            vec![Inline::Subscript(Subscript {
                 child: text(content),
-            }),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

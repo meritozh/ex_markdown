@@ -121,7 +121,7 @@ pub enum EmphasisStyle {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Emphasis<'a> {
-    pub child: Text<'a>,
+    pub children: Vec<Inline<'a>>,
     pub styles: Vec<EmphasisStyle>,
 }
 
@@ -144,7 +144,7 @@ pub struct Highlight<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Strikethrough<'a> {
-    pub child: Text<'a>,
+    pub children: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -161,14 +161,13 @@ pub enum DiffStyle {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Diff<'a> {
     pub style: DiffStyle,
-    pub child: Text<'a>,
+    pub children: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Image<'a> {
-    // `title` can be empty.
-    pub title: Option<&'a str>,
-    pub url: &'a str,
+    pub title: Text<'a>,
+    pub uri: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -205,5 +204,5 @@ pub struct Superscript<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Latex<'a> {
-    pub content: &'a str,
+    pub child: Text<'a>,
 }

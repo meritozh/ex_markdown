@@ -12,7 +12,7 @@ use nom::{
 use nom::{error::ErrorKind, Err};
 
 use crate::{
-    inline::text::text,
+    inline::{parse_inline, text::text},
     token::{Inline, Span},
 };
 
@@ -60,10 +60,13 @@ fn span_test() {
 pub fn parse_span(input: &str) -> IResult<&str, Vec<Inline>> {
     map(span, |(leading, content)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Span(Span {
+            parse_inline(leading),
+            vec![Inline::Span(Span {
                 child: text(content),
-            }),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

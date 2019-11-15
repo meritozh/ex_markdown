@@ -12,7 +12,7 @@ use nom::{
 use std::cmp;
 
 use crate::{
-    inline::text::text,
+    inline::parse_inline,
     token::{Emphasis, EmphasisStyle, Inline},
 };
 
@@ -100,11 +100,14 @@ fn emphasis_test() {
 pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
     map(emphasis, |(leading, content, styles)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Emphasis(Emphasis {
-                child: text(content),
+            parse_inline(leading),
+            vec![Inline::Emphasis(Emphasis {
+                children: parse_inline(content),
                 styles,
-            }),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

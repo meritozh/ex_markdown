@@ -12,7 +12,7 @@ use nom::{
 use nom::{error::ErrorKind, Err};
 
 use crate::{
-    inline::text::text,
+    inline::parse_inline,
     token::{Inline, Strikethrough},
 };
 
@@ -52,10 +52,13 @@ fn strikethrough_test() {
 pub fn parse_strikethrough(input: &str) -> IResult<&str, Vec<Inline>> {
     map(strikethrough, |(leading, content)| {
         vec![
-            Inline::Text(text(leading)),
-            Inline::Strikethrough(Strikethrough {
-                child: text(content),
-            }),
+            parse_inline(leading),
+            vec![Inline::Strikethrough(Strikethrough {
+                children: parse_inline(content),
+            })],
         ]
+        .into_iter()
+        .flatten()
+        .collect()
     })(input)
 }

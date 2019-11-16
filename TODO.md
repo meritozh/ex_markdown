@@ -30,7 +30,7 @@
 - [x] subscript
 - [x] superscript
 - [x] image
-- [ ] link
+- [x] link
 - [ ] ruby
 - [ ] mark
 

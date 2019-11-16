@@ -2,6 +2,7 @@ pub(crate) mod diff;
 pub(crate) mod emphasis;
 pub(crate) mod image;
 pub(crate) mod latex;
+pub(crate) mod link;
 pub(crate) mod span;
 pub(crate) mod strikethrough;
 pub(crate) mod subscript;
@@ -13,8 +14,8 @@ use nom::branch::alt;
 use crate::{
     inline::{
         diff::parse_diff, emphasis::parse_emphasis, image::parse_image, latex::parse_latex,
-        span::parse_span, strikethrough::parse_strikethrough, subscript::parse_subscript,
-        superscript::parse_superscript, text::parse_text,
+        link::parse_link, span::parse_span, strikethrough::parse_strikethrough,
+        subscript::parse_subscript, superscript::parse_superscript, text::parse_text,
     },
     token::Inline,
 };
@@ -28,6 +29,7 @@ pub fn parse_inline(input: &str) -> Vec<Inline> {
             parse_latex,
             parse_diff,
             parse_image,
+            parse_link,
             parse_emphasis,
             parse_strikethrough,
             parse_subscript,

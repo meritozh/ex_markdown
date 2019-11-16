@@ -132,9 +132,8 @@ pub struct Text<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Link<'a> {
-    // `title` can be empty.
-    pub title: Option<&'a str>,
-    pub url: &'a str,
+    pub title: Text<'a>,
+    pub uri: Text<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

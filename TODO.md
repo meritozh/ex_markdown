@@ -31,8 +31,8 @@
 - [x] superscript
 - [x] image
 - [x] link
-- [ ] ruby
-- [ ] mark
+- [x] ruby
+- [x] mark
 
 ## TODO
 

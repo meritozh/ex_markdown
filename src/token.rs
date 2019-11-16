@@ -100,7 +100,7 @@ pub enum Inline<'a> {
     Text(Text<'a>),
     Link(Link<'a>),
     Emphasis(Emphasis<'a>),
-    Highlight(Highlight<'a>),
+    Mark(Mark<'a>),
     Strikethrough(Strikethrough<'a>),
     Underline(Underline<'a>),
     Diff(Diff<'a>),
@@ -137,7 +137,7 @@ pub struct Link<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Highlight<'a> {
+pub struct Mark<'a> {
     pub children: Vec<Inline<'a>>,
 }
 
@@ -171,7 +171,7 @@ pub struct Image<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Ruby<'a> {
-    pub annotation: &'a str,
+    pub annotation: Text<'a>,
     pub children: Vec<Inline<'a>>,
 }
 

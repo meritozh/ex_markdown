@@ -60,6 +60,10 @@ fn diff(input: &str) -> IResult<&str, (&str, &str, DiffStyle)> {
 fn diff_test() {
     assert_eq!(diff("++test++"), Ok(("", ("", "test", DiffStyle::Plus))));
     assert_eq!(diff("--test--"), Ok(("", ("", "test", DiffStyle::Minus))));
+    assert_eq!(
+        diff("123--test--"),
+        Ok(("", ("123", "test", DiffStyle::Minus)))
+    );
 }
 
 pub fn parse_diff(input: &str) -> IResult<&str, Vec<Inline>> {

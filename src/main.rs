@@ -5,7 +5,7 @@ use std::io::prelude::*;
 use std::path::Path;
 
 fn main() {
-    let path = Path::new("/Users/gaoge/Develop/ex_markdown/test.md");
+    let path = Path::new("./test.md");
     let mut file = File::open(&path).unwrap();
     let mut document = String::new();
 

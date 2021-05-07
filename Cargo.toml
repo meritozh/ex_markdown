@@ -5,4 +5,4 @@ authors = ["meritozh <ah841814092@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-nom = "5.0.1"
+nom = "6.1.2"

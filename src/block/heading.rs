@@ -1,51 +1,58 @@
 use nom::{
-    character::complete::{char, line_ending, not_line_ending},
+    character::complete::{char, line_ending, not_line_ending, space1},
     combinator::{map, verify},
     error::context,
-    multi::many1_count,
+    multi::many_m_n,
     sequence::{separated_pair, terminated},
     IResult,
 };
 
 #[cfg(test)]
-use nom::{error::ErrorKind, Err};
+use nom::{
+    error::{Error, ErrorKind},
+    Err,
+};
 
 use crate::token::{Block, Heading};
 
-/// Recognize `(#+)<space><text>\n` style markdown input.
 fn heading(input: &str) -> IResult<&str, (usize, &str)> {
     context(
         "heading",
         separated_pair(
-            verify(many1_count(char('#')), |&count| count <= 6),
-            char(' '),
-            verify(not_line_ending, |text: &str| !text.is_empty()),
+            map(many_m_n(1, 6, char('#')), |matched| matched.len()),
+            space1,
+            verify(terminated(not_line_ending, line_ending), |heading: &str| {
+                !heading.is_empty()
+            }),
         ),
     )(input)
 }
 
 #[test]
 fn heading_test() {
-    assert_eq!(heading("### 123"), Ok(("", (3, "123"))));
-    assert_eq!(heading("### ### 123"), Ok(("", (3, "### 123"))));
-    assert_eq!(heading("###### 123\nabc"), Ok(("\nabc", (6, "123"))));
-    assert_eq!(heading("###"), Err(Err::Error(("", ErrorKind::Char))));
-    assert_eq!(heading("### "), Err(Err::Error(("", ErrorKind::Verify))));
+    assert_eq!(heading("### 123\n"), Ok(("", (3, "123"))));
+    assert_eq!(heading("### ### 123\n"), Ok(("", (3, "### 123"))));
+    assert_eq!(heading("###### 123\nabc"), Ok(("abc", (6, "123"))));
+    assert_eq!(
+        heading("###"),
+        Err(Err::Error(Error::new("", ErrorKind::Char)))
+    );
+    assert_eq!(
+        heading("### "),
+        Err(Err::Error(Error::new("", ErrorKind::Verify)))
+    );
     assert_eq!(
         heading("######123"),
-        Err(Err::Error(("123", ErrorKind::Char)))
+        Err(Err::Error(Error::new("123", ErrorKind::Char)))
     );
     assert_eq!(
         heading("####### 123"),
-        Err(Err::Error(("####### 123", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("####### 123", ErrorKind::Verify)))
     );
 }
 
 pub fn parse_heading(input: &str) -> IResult<&str, Block> {
-    map(terminated(heading, line_ending), |(count, content)| {
-        Block::Heading(Heading {
-            level: count,
-            child: content,
-        })
+    map(heading, |(level, content)| {
+        Block::Heading(Heading { level, content })
     })(input)
 }

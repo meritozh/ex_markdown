@@ -1,3 +1,5 @@
+use std::usize;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token<'a> {
     Block(Block<'a>),
@@ -40,8 +42,8 @@ pub struct Paragraph<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockQuote<'a> {
-    // Vec here, because it allow empty line.
-    pub child: &'a str,
+    pub level: usize,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -68,7 +70,7 @@ pub struct List<'a> {
 pub struct Heading<'a> {
     pub level: usize,
     // pub child: Inline<'a>,
-    pub child: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -79,7 +81,7 @@ pub struct Command<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct CodeBlock<'a> {
-    pub lang: &'a str,
+    pub property: Vec<&'a str>,
     pub content: &'a str,
 }
 

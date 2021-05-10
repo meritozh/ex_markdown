@@ -1,12 +1,12 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
-    error::context,
+    error::{context, ParseError},
     multi::{many1_count, many_till},
     sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
 
 use crate::{
@@ -14,17 +14,17 @@ use crate::{
     token::{Diff, DiffStyle, Inline},
 };
 
-fn factory<'a>(
-    symbol: &'static str,
-) -> impl Fn(&'a str) -> IResult<&'a str, (usize, usize, usize)> {
+fn factory<'a, E: ParseError<&'a str>>(
+    symbol: char,
+) -> impl Parser<&'a str, (usize, usize, usize), E> {
     map(
         verify(
             tuple((
                 map(
-                    many_till(anychar, many1_count(tag(symbol))),
+                    many_till(anychar, many1_count(char(symbol))),
                     |(leading, count)| (leading.len(), count),
                 ),
-                many_till(anychar, many1_count(tag(symbol))),
+                many_till(anychar, many1_count(char(symbol))),
             )),
             |((_, count1), (_, count2))| *count1 >= 2 && *count2 >= 2 && count1 == count2,
         ),
@@ -33,7 +33,7 @@ fn factory<'a>(
 }
 
 fn plus(input: &str) -> IResult<&str, (&str, &str, DiffStyle)> {
-    map(factory("+"), |(count1, count2, count3)| {
+    map(factory('+'), |(count1, count2, count3)| {
         (
             &input[..count1],
             &input[count1 + count2..count1 + count2 + count3],
@@ -43,7 +43,7 @@ fn plus(input: &str) -> IResult<&str, (&str, &str, DiffStyle)> {
 }
 
 fn minus(input: &str) -> IResult<&str, (&str, &str, DiffStyle)> {
-    map(factory("-"), |(count1, count2, count3)| {
+    map(factory('-'), |(count1, count2, count3)| {
         (
             &input[..count1],
             &input[count1 + count2..count1 + count2 + count3],

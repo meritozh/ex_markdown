@@ -1,75 +1,83 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, digit1, not_line_ending},
+    character::complete::{char, digit1, line_ending, not_line_ending, space1},
     combinator::{map, map_parser, value},
     error::context,
     multi::many0_count,
-    sequence::tuple,
+    sequence::{terminated, tuple},
     IResult,
 };
 
 use crate::token::{Block, List, ListStyle};
 
-fn bullet_list(input: &str) -> IResult<&str, (&str, usize)> {
+fn bullet_list(input: &str) -> IResult<&str, (usize, &str)> {
     context(
-        "bullet_list",
-        map_parser(not_line_ending, |content| {
-            tuple((many0_count(char(' ')), tag("- ")))(content)
-                .map(|(remain, (count, _))| ("", (remain, count)))
+        "bullet list",
+        map_parser(terminated(not_line_ending, line_ending), |content| {
+            tuple((many0_count(char(' ')), char('-'), space1))(content)
+                .map(|(content, (level, _, _))| ("", (level, content)))
         }),
     )(input)
 }
 
-fn number_list(input: &str) -> IResult<&str, (&str, u32, usize)> {
+fn number_list<'a>(input: &'a str) -> IResult<&'a str, (usize, u32, &'a str)> {
     context(
-        "number_list",
-        map_parser(not_line_ending, |content: &str| {
-            tuple((many0_count(char(' ')), digit1, tag(". ")))(content).map(
-                |(remain, (count, digit, _))| ("", (remain, digit.parse::<u32>().unwrap(), count)),
-            )
-        }),
+        "number list",
+        map_parser(
+            terminated(not_line_ending, line_ending),
+            |content: &'a str| {
+                tuple((many0_count(char(' ')), digit1, char('.'), space1))(content).map(
+                    |(content, (count, digit, _, _))| {
+                        ("", (count, digit.parse::<u32>().unwrap(), content))
+                    },
+                )
+            },
+        ),
     )(input)
 }
 
-fn task_list(input: &str) -> IResult<&str, (&str, usize, bool)> {
+fn task_list(input: &str) -> IResult<&str, (usize, bool, &str)> {
     context(
-        "task_list",
-        map_parser(not_line_ending, |content| {
+        "task list",
+        map_parser(terminated(not_line_ending, line_ending), |content| {
             tuple((
                 many0_count(char(' ')),
-                alt((value(false, tag("- [ ] ")), value(true, tag("- [x] ")))),
+                terminated(
+                    alt((value(false, tag("- [ ]")), value(true, tag("- [x]")))),
+                    space1,
+                ),
             ))(content)
-            .map(|(remain, (count, checked))| ("", (remain, count, checked)))
+            .map(|(content, (count, checked))| ("", (count, checked, content)))
         }),
     )(input)
 }
 
 #[test]
 fn list_test() {
-    assert_eq!(bullet_list("- 123\n"), Ok(("\n", ("123", 0))));
-    assert_eq!(bullet_list("  - 123\n"), Ok(("\n", ("123", 2))));
-    assert_eq!(number_list("1. asd"), Ok(("", ("asd", 1, 0))));
-    assert_eq!(task_list("- [ ] task"), Ok(("", ("task", 0, false))));
+    assert_eq!(bullet_list("- 123\n"), Ok(("\n", (0, "123"))));
+    assert_eq!(bullet_list("  - 123\n"), Ok(("\n", (2, "123"))));
+    assert_eq!(number_list("1. asd"), Ok(("", (0, 1, "asd"))));
+    assert_eq!(task_list("- [ ] task"), Ok(("", (0, false, "task"))));
 }
 
 pub fn parse_list(input: &str) -> IResult<&str, Block> {
     alt((
-        map(task_list, |(content, indentation, checked)| {
+        map(task_list, |(indentation, checked, content)| {
             Block::List(List {
                 style: ListStyle::Task(checked),
                 indentation,
                 content,
             })
         }),
-        map(bullet_list, |(content, indentation)| {
+        map(bullet_list, |(indentation, content)| {
             Block::List(List {
                 style: ListStyle::Bullet,
                 indentation,
                 content,
             })
         }),
-        map(number_list, |(content, digit, indentation)| {
+        map(number_list, |(indentation, digit, content)| {
             Block::List(List {
                 style: ListStyle::Number(digit),
                 indentation,

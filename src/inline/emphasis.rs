@@ -1,113 +1,87 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::anychar,
-    combinator::{map, peek},
-    error::context,
+    bytes::complete::take,
+    character::complete::{anychar, char},
+    combinator::{flat_map, map, peek},
+    error::{context, ParseError},
     multi::{many1_count, many_till},
     sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
 
-use std::cmp;
+use std::cmp::min;
 
 use crate::{
     inline::parse_inline,
     token::{Emphasis, EmphasisStyle, Inline},
 };
 
-fn factory<'a>(
-    symbol: &'static str,
-) -> impl Fn(&'a str) -> IResult<&'a str, ((usize, usize), (usize, usize))> {
-    tuple((
-        map(
-            many_till(anychar, many1_count(tag(symbol))),
-            |(leading, count)| (leading.len(), count),
-        ),
-        peek(map(
-            many_till(anychar, many1_count(tag(symbol))),
-            |(vec, count)| (vec.len(), count),
+fn factory<'a, E: ParseError<&'a str>>(
+    symbol: char,
+) -> impl Parser<&'a str, (usize, usize, usize), E> {
+    map(
+        tuple((
+            many1_count(char(symbol)),
+            many_till(anychar, peek(many1_count(char(symbol)))),
         )),
-    ))
+        |(left, (content, right))| (left, content.len(), right),
+    )
 }
 
-fn emphasis(input: &str) -> IResult<&str, (&str, &str, Vec<EmphasisStyle>)> {
+fn emphasis(input: &str) -> IResult<&str, (Option<&str>, &str, EmphasisStyle)> {
     context(
         "emphsis",
-        map(
-            alt((factory("*"), factory("_"))),
-            |((count1, count2), (count3, count4))| {
-                let delimit = cmp::min(count2, count4);
-                let leading = if count2 <= delimit {
-                    &input[..count1]
-                } else {
-                    &input[..count1 + count2 - delimit]
-                };
-                let styles = match delimit {
-                    1 => vec![EmphasisStyle::Italic],
-                    _ if delimit % 2 == 0 => vec![EmphasisStyle::Bold],
-                    _ if delimit % 2 == 1 => vec![EmphasisStyle::Italic, EmphasisStyle::Bold],
-                    _ => unreachable!(),
-                };
-                (
-                    count3 + delimit,
-                    leading,
-                    &input[count1 + count2..count1 + count2 + count3],
-                    styles,
-                )
-            },
+        flat_map(
+            map(
+                alt((factory('*'), factory('_'))),
+                |(left, content, right)| {
+                    let style = match min(left, right) {
+                        1 => EmphasisStyle::Italic,
+                        i if i % 2 == 0 => EmphasisStyle::Bold,
+                        _ => EmphasisStyle::BoldItalic,
+                    };
+
+                    match left - right {
+                        0 => (left, (None, &input[left..left + content], style)),
+                        i if i < 0 => (left, (None, &input[left..left + content], style)),
+                        i if i > 0 => (
+                            right,
+                            (Some(&input[..i]), &input[left..left + content], style),
+                        ),
+                    }
+                },
+            ),
+            |(count, result)| map(take(count), |_| result),
         ),
     )(input)
-    .map(|(remain, (count, leading, content, styles))| {
-        (&remain[count..], (leading, content, styles))
-    })
 }
 
 #[test]
 fn emphasis_test() {
     assert_eq!(
         emphasis("**test**"),
-        Ok(("", ("", "test", vec![EmphasisStyle::Bold])))
+        Ok(("", (None, "test", EmphasisStyle::Bold)))
     );
     assert_eq!(
         emphasis("***test**"),
-        Ok(("", ("*", "test", vec![EmphasisStyle::Bold])))
+        Ok(("", (Some("*"), "test", EmphasisStyle::Bold)))
     );
     assert_eq!(
         emphasis("**test***"),
-        Ok(("*", ("", "test", vec![EmphasisStyle::Bold])))
+        Ok(("*", (None, "test", EmphasisStyle::Bold)))
     );
     assert_eq!(
         emphasis("***test***"),
-        Ok((
-            "",
-            ("", "test", vec![EmphasisStyle::Italic, EmphasisStyle::Bold])
-        ))
+        Ok(("", (None, "test", EmphasisStyle::BoldItalic)))
     );
     assert_eq!(
         emphasis("123****test***"),
-        Ok((
-            "",
-            (
-                "123*",
-                "test",
-                vec![EmphasisStyle::Italic, EmphasisStyle::Bold]
-            )
-        ))
+        Ok(("", (Some("123*"), "test", EmphasisStyle::BoldItalic)))
     );
 }
 
-pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(emphasis, |(leading, content, styles)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Emphasis(Emphasis {
-                children: parse_inline(content),
-                styles,
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+pub fn parse_emphasis(input: &str) -> IResult<&str, Inline> {
+    map(emphasis, |(leading, content, style)| {
+        Inline::Emphasis(Emphasis { style: style })
     })(input)
 }

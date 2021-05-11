@@ -119,6 +119,7 @@ pub enum Inline<'a> {
 pub enum EmphasisStyle {
     Bold,
     Italic,
+    BoldItalic,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -162,7 +163,7 @@ pub enum DiffStyle {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Diff<'a> {
     pub style: DiffStyle,
-    pub children: Vec<Inline<'a>>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

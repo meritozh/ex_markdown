@@ -24,7 +24,9 @@ fn strikethrough(input: &str) -> IResult<&str, &str> {
                     many1_count(char('~')),
                     many_till(anychar, many1_count(char('~'))),
                 )),
-                |(left, (_, right))| *left >= 2 && *right >= 2 && left == right,
+                |(left, (_, right)): &(usize, (_, usize))| {
+                    *left >= 2 && *right >= 2 && left == right
+                },
             ),
             |(left, (content, _))| &input[left..left + content.len()],
         ),

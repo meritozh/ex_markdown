@@ -5,6 +5,7 @@ pub(crate) mod inliner;
 pub(crate) mod latex;
 pub(crate) mod link;
 pub(crate) mod mark;
+pub(crate) mod reference;
 pub(crate) mod ruby;
 pub(crate) mod span;
 pub(crate) mod strikethrough;

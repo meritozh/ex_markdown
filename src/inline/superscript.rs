@@ -24,7 +24,7 @@ fn superscript(input: &str) -> IResult<&str, &str> {
                     many1_count(char('^')),
                     many_till(anychar, many1_count(char('^'))),
                 )),
-                |(left, (_, right))| *left == 1 && *right == 1,
+                |(left, (_, right)): &(usize, (_, usize))| *left == 1 && *right == 1,
             ),
             |(left, (content, _))| &input[left..left + content.len()],
         ),

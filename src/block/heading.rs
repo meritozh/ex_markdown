@@ -21,9 +21,10 @@ fn heading(input: &str) -> IResult<&str, (usize, &str)> {
         separated_pair(
             map(many_m_n(1, 6, char('#')), |matched| matched.len()),
             space1,
-            verify(terminated(not_line_ending, line_ending), |heading: &str| {
-                !heading.is_empty()
-            }),
+            verify(
+                terminated(not_line_ending, line_ending),
+                |heading: &&str| !heading.is_empty(),
+            ),
         ),
     )(input)
 }

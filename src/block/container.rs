@@ -14,6 +14,7 @@ fn container<'a>(input: &'a str) -> IResult<&'a str, (&'a str, &'a str)> {
         "container",
         tuple((
             delimited(tag(":::"), preceded(space0, not_line_ending), line_ending),
+            // TODO: use peek see if there's a line_end before delimiter
             terminated(take_until(":::"), tuple((tag(":::"), line_ending))),
         )),
     )(input)

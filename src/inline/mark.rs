@@ -1,6 +1,6 @@
 use nom::{
     bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
     error::context,
     multi::{many1_count, many_till},
@@ -13,46 +13,30 @@ use crate::{
     token::{Inline, Mark},
 };
 
-fn mark(input: &str) -> IResult<&str, (&str, &str)> {
+fn mark(input: &str) -> IResult<&str, &str> {
     context(
         "mark",
         map(
             verify(
                 tuple((
-                    map(
-                        many_till(anychar, many1_count(tag("="))),
-                        |(leading, count)| (leading.len(), count),
-                    ),
-                    many_till(anychar, many1_count(tag("="))),
+                    many1_count(char('=')),
+                    // TODO: anychar need convert line_ending to space.
+                    many_till(anychar, many1_count(char('='))),
                 )),
-                |((_, count1), (_, count2))| *count1 >= 2 && *count2 >= 2 && count1 == count2,
+                |(left, (_, right)): &(usize, (_, usize))| {
+                    *left >= 2 && *right >= 2 && left == right
+                },
             ),
-            |((count1, count2), (content, _))| {
-                (
-                    &input[..count1],
-                    &input[count1 + count2..count1 + count2 + content.len()],
-                )
-            },
+            |(left, (content, _))| &input[left..left + content.len()],
         ),
     )(input)
 }
 
 #[test]
 fn mark_test() {
-    assert_eq!(mark("==test=="), Ok(("", ("", "test"))));
-    assert_eq!(mark("123==test=="), Ok(("", ("123", "test"))));
+    assert_eq!(mark("==test=="), Ok(("", "test")));
 }
 
-pub fn parse_mark(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(mark, |(leading, mark)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Mark(Mark {
-                children: parse_inline(mark),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
-    })(input)
+pub fn parse_mark(input: &str) -> IResult<&str, Inline> {
+    map(mark, |content| Inline::Mark(Mark { content }))(input)
 }

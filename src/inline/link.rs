@@ -9,10 +9,7 @@ use nom::{
     IResult,
 };
 
-use crate::{
-    inline::{parse_inline, text::text},
-    token::{Inline, Link},
-};
+use crate::token::{Inline, Link};
 
 fn link(input: &str) -> IResult<&str, (&str, &str, &str)> {
     context(
@@ -53,17 +50,8 @@ fn link_test() {
     );
 }
 
-pub fn parse_link(input: &str) -> IResult<&str, Vec<Inline>> {
+pub fn parse_link(input: &str) -> IResult<&str, Inline> {
     map(link, |(leading, title, uri)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Link(Link {
-                title: text(title),
-                uri: text(uri),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+        Inline::Link(Link { title, uri })
     })(input)
 }

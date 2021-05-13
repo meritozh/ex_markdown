@@ -14,6 +14,7 @@ fn command(input: &str) -> IResult<&str, (&str, &str)> {
         "command",
         tuple((
             delimited(char('#'), take_until("{"), tuple((char('{'), line_ending))),
+            // TODO: use peek see if there's a line_end before delimiter
             terminated(take_until("}"), tuple((char('}'), line_ending))),
         )),
     )(input)

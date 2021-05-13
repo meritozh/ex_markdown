@@ -1,9 +1,9 @@
 use nom::{
     bytes::complete::{tag, take_until},
-    character::complete::{line_ending, not_line_ending, space1},
-    combinator::map,
+    character::complete::{char, line_ending, not_line_ending, space1},
+    combinator::{map, map_parser, peek, rest},
     error::context,
-    sequence::{delimited, terminated, tuple},
+    sequence::{delimited, preceded, terminated, tuple},
     IResult,
 };
 
@@ -13,7 +13,11 @@ fn footnote(input: &str) -> IResult<&str, (&str, &str)> {
     context(
         "footnote",
         tuple((
-            delimited(tag("[^"), take_until("]:"), tuple((tag("]:"), space1))),
+            delimited(
+                char('['),
+                map_parser(take_until("]:"), preceded(peek(char('^')), rest)),
+                tuple((tag("]:"), space1)),
+            ),
             terminated(not_line_ending, line_ending),
         )),
     )(input)
@@ -21,11 +25,11 @@ fn footnote(input: &str) -> IResult<&str, (&str, &str)> {
 
 #[test]
 fn footnote_test() {
-    assert_eq!(footnote("[^test]: hahaha"), Ok(("", ("test", "hahaha"))))
+    assert_eq!(footnote("[^test]: hahaha"), Ok(("", ("^test", "hahaha"))))
 }
 
 pub fn parse_footnote(input: &str) -> IResult<&str, Block> {
-    map(terminated(footnote, line_ending), |(tag, content)| {
-        Block::Footnote(Footnote { tag, content })
+    map(terminated(footnote, line_ending), |(label, content)| {
+        Block::Footnote(Footnote { label, content })
     })(input)
 }

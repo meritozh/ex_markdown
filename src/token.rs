@@ -16,7 +16,7 @@ pub enum Block<'a> {
     Command(Command<'a>),
     CodeBlock(CodeBlock<'a>),
     LatexBlock(LatexBlock<'a>),
-    RefDetail(RefDetail<'a>),
+    Definition(Definition<'a>),
     Footnote(Footnote<'a>),
     Container(Container<'a>),
     BlankLine,
@@ -37,7 +37,7 @@ pub struct FrontMatter<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Paragraph<'a> {
-    pub children: Vec<Inline<'a>>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -55,7 +55,7 @@ pub enum ListStyle {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Footnote<'a> {
-    pub tag: &'a str,
+    pub label: &'a str,
     pub content: &'a str,
 }
 
@@ -91,9 +91,10 @@ pub struct LatexBlock<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct RefDetail<'a> {
-    pub reference: &'a str,
-    pub content: &'a str,
+pub struct Definition<'a> {
+    pub label: &'a str,
+    pub url: &'a str,
+    pub title: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -142,7 +143,7 @@ pub struct Link<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Mark<'a> {
-    pub children: Vec<Inline<'a>>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -185,14 +186,8 @@ pub struct Span<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum RefSymbol<'a> {
-    Number(i32),
-    Tag(&'a str),
-}
-
-#[derive(Debug, PartialEq, Eq)]
 pub struct Reference<'a> {
-    pub symbol: RefSymbol<'a>,
+    pub label: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

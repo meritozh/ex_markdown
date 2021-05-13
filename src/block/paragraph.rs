@@ -6,25 +6,18 @@ use nom::{
     IResult,
 };
 
-use crate::{
-    inline::parse_inline,
-    token::{Block, Paragraph},
-};
+use crate::token::{Block, Paragraph};
 
 /// Recognize any characters until EOL or no more data.
 fn paragraph(input: &str) -> IResult<&str, &str> {
-    context("paragraph", not_line_ending)(input)
+    context("paragraph", terminated(not_line_ending, line_ending))(input)
 }
 
 #[test]
 fn paragraph_test() {
-    assert_eq!(paragraph("test"), Ok(("", "test")));
+    assert_eq!(paragraph("test\n"), Ok(("", "test")));
 }
 
 pub fn parse_paragraph(input: &str) -> IResult<&str, Block> {
-    map(terminated(paragraph, line_ending), |content| {
-        Block::Paragraph(Paragraph {
-            children: parse_inline(content),
-        })
-    })(input)
+    map(paragraph, |content| Block::Paragraph(Paragraph { content }))(input)
 }

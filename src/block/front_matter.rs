@@ -1,9 +1,9 @@
 use nom::{
     bytes::complete::{tag, take_until},
-    character::complete::{line_ending, not_line_ending, space0},
+    character::complete::line_ending,
     combinator::map,
     error::context,
-    sequence::{delimited, preceded, terminated, tuple},
+    sequence::{preceded, terminated, tuple},
     IResult,
 };
 
@@ -20,6 +20,7 @@ pub fn front_matter(input: &str) -> IResult<&str, &str> {
         "front matter",
         preceded(
             tuple((tag("---"), line_ending)),
+            // TODO: use peek see if there's a line_end before delimiter
             terminated(take_until("---"), tuple((tag("---"), line_ending))),
         ),
     )(input)

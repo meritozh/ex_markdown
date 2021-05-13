@@ -18,7 +18,7 @@ fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (us
                 // TODO: anychar need convert line_ending to space.
                 many_till(anychar, many1_count(char(symbol))),
             )),
-            |(left, (_, right))| *left >= 2 && *right >= 2 && left == right,
+            |(left, (_, right)): &(usize, (_, usize))| *left >= 2 && *right >= 2 && left == right,
         ),
         |(left, (content, _))| (left, content.len()),
     )
@@ -26,6 +26,7 @@ fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (us
 
 fn plus(input: &str) -> IResult<&str, (&str, DiffStyle)> {
     map(factory('+'), |(left, content)| {
+        // TODO: consider use consume to construct output instead of manually string slice
         (&input[left..left + content], DiffStyle::Plus)
     })(input)
 }

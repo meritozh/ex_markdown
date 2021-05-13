@@ -21,6 +21,7 @@ fn code_block(input: &str) -> IResult<&str, (Vec<&str>, &str)> {
             separated_pair(
                 property,
                 line_ending,
+                // TODO: use peek see if there's a line_end before delimiter
                 terminated(take_until("```"), tuple((tag("```"), line_ending))),
             ),
         ),

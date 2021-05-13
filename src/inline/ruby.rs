@@ -18,7 +18,7 @@ fn ruby(input: &str) -> IResult<&str, (&str, &str)> {
             map(
                 verify(
                     separated_list1(char('|'), take_until("|")),
-                    |v: &Vec<&str>| v.len() == 2,
+                    |v: &Vec<_>| v.len() == 2,
                 ),
                 |v: Vec<&str>| 
                 // SAFETY: checked length in verify

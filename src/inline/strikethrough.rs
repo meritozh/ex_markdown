@@ -1,6 +1,5 @@
 use nom::{
-    bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
     error::context,
     multi::{many1_count, many_till},
@@ -9,56 +8,40 @@ use nom::{
 };
 
 #[cfg(test)]
-use nom::{error::ErrorKind, Err};
-
-use crate::{
-    inline::parse_inline,
-    token::{Inline, Strikethrough},
+use nom::{
+    error::{Error, ErrorKind},
+    Err,
 };
 
-fn strikethrough(input: &str) -> IResult<&str, (&str, &str)> {
+use crate::token::{Inline, Strikethrough};
+
+fn strikethrough(input: &str) -> IResult<&str, &str> {
     context(
-        "strikethrough",
+        "strike through",
         map(
             verify(
                 tuple((
-                    map(
-                        many_till(anychar, many1_count(tag("~"))),
-                        |(leading, count)| (leading.len(), count),
-                    ),
-                    many_till(anychar, many1_count(tag("~"))),
+                    many1_count(char('~')),
+                    many_till(anychar, many1_count(char('~'))),
                 )),
-                |((_, count1), (_, count2))| *count1 >= 2 && *count2 >= 2 && count1 == count2,
+                |(left, (_, right))| *left >= 2 && *right >= 2 && left == right,
             ),
-            |((count1, count2), (content, _))| {
-                (
-                    &input[..count1],
-                    &input[count1 + count2..count1 + count2 + content.len()],
-                )
-            },
+            |(left, (content, _))| &input[left..left + content.len()],
         ),
     )(input)
 }
 
 #[test]
 fn strikethrough_test() {
-    assert_eq!(strikethrough("~~test~~"), Ok(("", ("", "test"))));
+    assert_eq!(strikethrough("~~test~~"), Ok(("", "test")));
     assert_eq!(
         strikethrough("~test~"),
-        Err(Err::Error(("~test~", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("~test~", ErrorKind::Verify)))
     );
 }
 
-pub fn parse_strikethrough(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(strikethrough, |(leading, content)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Strikethrough(Strikethrough {
-                children: parse_inline(content),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+pub fn parse_strikethrough(input: &str) -> IResult<&str, Inline> {
+    map(strikethrough, |content| {
+        Inline::Strikethrough(Strikethrough { content })
     })(input)
 }

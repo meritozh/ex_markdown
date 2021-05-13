@@ -15,9 +15,9 @@ fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (us
         verify(
             tuple((
                 many1_count(char(symbol)),
+                // TODO: anychar need convert line_ending to space.
                 many_till(anychar, many1_count(char(symbol))),
             )),
-            // TODO: recognize when (count1 == count2), but it's not good choice.
             |(left, (_, right))| *left >= 2 && *right >= 2 && left == right,
         ),
         |(left, (content, _))| (left, content.len()),
@@ -25,14 +25,14 @@ fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (us
 }
 
 fn plus(input: &str) -> IResult<&str, (&str, DiffStyle)> {
-    map(factory('+'), |(count1, count2)| {
-        (&input[count1..count1 + count2], DiffStyle::Plus)
+    map(factory('+'), |(left, content)| {
+        (&input[left..left + content], DiffStyle::Plus)
     })(input)
 }
 
 fn minus(input: &str) -> IResult<&str, (&str, DiffStyle)> {
-    map(factory('-'), |(count1, count2)| {
-        (&input[count1..count1 + count2], DiffStyle::Minus)
+    map(factory('-'), |(left, content)| {
+        (&input[left..left + content], DiffStyle::Minus)
     })(input)
 }
 

@@ -1,52 +1,44 @@
 use nom::{
-    bytes::complete::tag, character::complete::anychar, combinator::map, error::context,
-    multi::many_till, sequence::tuple, IResult,
+    bytes::complete::take_until,
+    character::complete::char,
+    combinator::{map, verify},
+    error::context,
+    multi::separated_list1,
+    sequence::delimited,
+    IResult,
 };
 
-use crate::{
-    inline::{parse_inline, text::text},
-    token::{Inline, Ruby},
-};
+use crate::token::{Inline, Ruby};
 
-fn ruby(input: &str) -> IResult<&str, (&str, &str, &str)> {
+fn ruby(input: &str) -> IResult<&str, (&str, &str)> {
     context(
         "ruby",
-        map(
-            tuple((
-                map(many_till(anychar, tag("{")), |(leading, _)| leading.len()),
-                map(many_till(anychar, tag("|")), |(title, _)| title.len()),
-                map(many_till(anychar, tag("}")), |(uri, _)| uri.len()),
-            )),
-            |(count1, count2, count3)| {
-                (
-                    &input[..count1],
-                    &input[count1 + 1..count1 + 1 + count2],
-                    &input[count1 + 1 + count2 + 1..count1 + 1 + count2 + 1 + count3],
-                )
-            },
+        delimited(
+            char('{'),
+            map(
+                verify(
+                    separated_list1(char('|'), take_until("|")),
+                    |v: &Vec<&str>| v.len() == 2,
+                ),
+                |v: Vec<&str>| 
+                // SAFETY: checked length in verify
+                unsafe { (*v.get_unchecked(0), *v.get_unchecked(1)) },
+            ),
+            char('}'),
         ),
     )(input)
 }
 
 #[test]
 fn ruby_test() {
-    assert_eq!(
-        ruby("{test|annotation}"),
-        Ok(("", ("", "test", "annotation")))
-    );
+    assert_eq!(ruby("{test1|anno}"), Ok(("", ("test1", "anno"))));
 }
 
-pub fn parse_ruby(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(ruby, |(leading, ruby, annotation)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Ruby(Ruby {
-                children: parse_inline(ruby),
-                annotation: text(annotation),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+pub fn parse_ruby(input: &str) -> IResult<&str, Inline> {
+    map(ruby, |(content, annotation)| {
+        Inline::Ruby(Ruby {
+            content,
+            annotation
+        })
     })(input)
 }

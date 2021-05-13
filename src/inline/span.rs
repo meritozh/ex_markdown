@@ -1,72 +1,44 @@
 use nom::{
-    bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
-    error::context,
+    error::{context, ParseError},
     multi::{many1_count, many_till},
     sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
-
-#[cfg(test)]
-use nom::{error::ErrorKind, Err};
 
 use crate::{
     inline::{parse_inline, text::text},
     token::{Inline, Span},
 };
 
-fn span(input: &str) -> IResult<&str, (&str, &str)> {
+fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (usize, usize), E> {
+    map(
+        verify(
+            tuple((
+                many1_count(char(symbol)),
+                // TODO: anychar need convert line_ending to space.
+                many_till(anychar, many1_count(char(symbol))),
+            )),
+            |(left, (_, right))| left == right,
+        ),
+        |(left, (content, _))| (left, content.len()),
+    )
+}
+
+fn span(input: &str) -> IResult<&str, &str> {
     context(
         "span",
-        map(
-            verify(
-                tuple((
-                    map(
-                        many_till(anychar, many1_count(tag("`"))),
-                        |(leading, count)| (leading.len(), count),
-                    ),
-                    many_till(anychar, many1_count(tag("`"))),
-                )),
-                |((_, count1), (_, count2))| count1 == count2,
-            ),
-            |((count1, count2), (content, _))| {
-                (
-                    &input[..count1],
-                    &input[count1 + count2..count1 + count2 + content.len()],
-                )
-            },
-        ),
+        map(factory('`'), |(left, content)| &input[left..left + content]),
     )(input)
 }
 
 #[test]
 fn span_test() {
-    assert_eq!(span("`test`"), Ok(("", ("", "test"))));
-    assert_eq!(span("```test```"), Ok(("", ("", "test"))));
-    assert_eq!(span("123```test```"), Ok(("", ("123", "test"))));
-    assert_eq!(
-        span("``test`"),
-        Err(Err::Error(("``test`", ErrorKind::Verify)))
-    );
-    assert_eq!(
-        span("`test``"),
-        Err(Err::Error(("`test``", ErrorKind::Verify)))
-    );
-    assert_eq!(span("`test"), Err(Err::Error(("", ErrorKind::Eof))));
-    assert_eq!(span("``"), Err(Err::Error(("", ErrorKind::Eof))));
+    assert_eq!(span("`test`"), Ok(("", "test")));
+    assert_eq!(span("```test```"), Ok(("", "test")));
 }
 
-pub fn parse_span(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(span, |(leading, content)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Span(Span {
-                child: text(content),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
-    })(input)
+pub fn parse_span(input: &str) -> IResult<&str, Inline> {
+    map(span, |content| Inline::Span(Span { content }))(input)
 }

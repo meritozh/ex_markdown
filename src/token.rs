@@ -124,8 +124,9 @@ pub enum EmphasisStyle {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Emphasis<'a> {
-    pub children: Vec<Inline<'a>>,
-    pub styles: Vec<EmphasisStyle>,
+    pub leading: Option<&'a str>,
+    pub content: &'a str,
+    pub style: EmphasisStyle,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -180,7 +181,7 @@ pub struct Ruby<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Span<'a> {
-    pub child: Text<'a>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -1,5 +1,5 @@
 use nom::{
-    bytes::complete::{tag, take_until},
+    bytes::complete::take_until,
     character::complete::{char, line_ending},
     combinator::map,
     error::context,

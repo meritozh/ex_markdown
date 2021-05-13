@@ -1,6 +1,5 @@
 use nom::{
-    bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
     error::context,
     multi::{many1_count, many_till},
@@ -9,56 +8,40 @@ use nom::{
 };
 
 #[cfg(test)]
-use nom::{error::ErrorKind, Err};
-
-use crate::{
-    inline::{parse_inline, text::text},
-    token::{Inline, Superscript},
+use nom::{
+    error::{Error, ErrorKind},
+    Err,
 };
 
-fn superscript(input: &str) -> IResult<&str, (&str, &str)> {
+use crate::token::{Inline, Superscript};
+
+fn superscript(input: &str) -> IResult<&str, &str> {
     context(
         "superscript",
         map(
             verify(
                 tuple((
-                    map(
-                        many_till(anychar, many1_count(tag("^"))),
-                        |(leading, count)| (leading.len(), count),
-                    ),
-                    many_till(anychar, many1_count(tag("^"))),
+                    many1_count(char('^')),
+                    many_till(anychar, many1_count(char('^'))),
                 )),
-                |((_, count1), (_, count2))| *count1 == 1 && *count2 == 1,
+                |(left, (_, right))| *left == 1 && *right == 1,
             ),
-            |((count1, count2), (content, _))| {
-                (
-                    &input[..count1],
-                    &input[count1 + count2..count1 + count2 + content.len()],
-                )
-            },
+            |(left, (content, _))| &input[left..left + content.len()],
         ),
     )(input)
 }
 
 #[test]
 fn superscript_test() {
-    assert_eq!(superscript("^test^"), Ok(("", ("", "test"))));
+    assert_eq!(superscript("^test^"), Ok(("", "test")));
     assert_eq!(
         superscript("^^test^^"),
-        Err(Err::Error(("^^test^^", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("^^test^^", ErrorKind::Verify)))
     );
 }
 
-pub fn parse_superscript(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(superscript, |(leading, content)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Superscript(Superscript {
-                child: text(content),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+pub fn parse_superscript(input: &str) -> IResult<&str, Inline> {
+    map(superscript, |content| {
+        Inline::Superscript(Superscript { content })
     })(input)
 }

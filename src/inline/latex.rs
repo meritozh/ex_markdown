@@ -1,6 +1,5 @@
 use nom::{
-    bytes::complete::tag,
-    character::complete::anychar,
+    character::complete::{anychar, char},
     combinator::{map, verify},
     error::context,
     multi::{many1_count, many_till},
@@ -9,64 +8,48 @@ use nom::{
 };
 
 #[cfg(test)]
-use nom::{error::ErrorKind, Err};
-
-use crate::{
-    inline::{parse_inline, text::text},
-    token::{Inline, Latex},
+use nom::{
+    error::{Error, ErrorKind},
+    Err,
 };
 
-fn latex(input: &str) -> IResult<&str, (&str, &str)> {
+use crate::token::{Inline, Latex};
+
+fn latex(input: &str) -> IResult<&str, &str> {
     context(
         "latex",
         map(
             verify(
                 tuple((
-                    map(
-                        many_till(anychar, many1_count(tag("$"))),
-                        |(leading, count)| (leading.len(), count),
-                    ),
-                    many_till(anychar, many1_count(tag("$"))),
+                    many1_count(char('$')),
+                    many_till(anychar, many1_count(char('$'))),
                 )),
-                |((_, count1), (_, count2))| count1 == count2,
+                |(left, (_, right))| left == right,
             ),
-            |((count1, count2), (content, _))| {
-                (
-                    &input[..count1],
-                    &input[count1 + count2..count1 + count2 + content.len()],
-                )
-            },
+            |(left, (content, _))| &input[left..left + content.len()],
         ),
     )(input)
 }
 
 #[test]
 fn latex_test() {
-    assert_eq!(latex("$test$"), Ok(("", ("", "test"))));
-    assert_eq!(latex("$$$test$$$"), Ok(("", ("", "test"))));
-    assert_eq!(latex("123$$$test$$$"), Ok(("", ("123", "test"))));
+    assert_eq!(latex("$test$"), Ok(("", "test")));
+    assert_eq!(latex("$$$test$$$"), Ok(("", "test")));
     assert_eq!(
         latex("$$test$"),
-        Err(Err::Error(("$$test$", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("$$test$", ErrorKind::Verify)))
     );
     assert_eq!(
         latex("$test$$"),
-        Err(Err::Error(("$test$$", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("$test$$", ErrorKind::Verify)))
     );
-    assert_eq!(latex("$test"), Err(Err::Error(("", ErrorKind::Eof))));
-    assert_eq!(latex("$$"), Err(Err::Error(("", ErrorKind::Eof))));
+    assert_eq!(
+        latex("$test"),
+        Err(Err::Error(Error::new("", ErrorKind::Eof)))
+    );
+    assert_eq!(latex("$$"), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 }
 
-pub fn parse_latex(input: &str) -> IResult<&str, Vec<Inline>> {
-    map(latex, |(leading, content)| {
-        vec![
-            parse_inline(leading),
-            vec![Inline::Latex(Latex {
-                child: text(content),
-            })],
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
-    })(input)
+pub fn parse_latex(input: &str) -> IResult<&str, Inline> {
+    map(latex, |content| Inline::Latex(Latex { content }))(input)
 }

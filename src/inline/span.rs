@@ -1,35 +1,28 @@
 use nom::{
     character::complete::{anychar, char},
     combinator::{map, verify},
-    error::{context, ParseError},
+    error::context,
     multi::{many1_count, many_till},
     sequence::tuple,
-    IResult, Parser,
+    IResult,
 };
 
-use crate::{
-    inline::{parse_inline, text::text},
-    token::{Inline, Span},
-};
-
-fn factory<'a, E: ParseError<&'a str>>(symbol: char) -> impl Parser<&'a str, (usize, usize), E> {
-    map(
-        verify(
-            tuple((
-                many1_count(char(symbol)),
-                // TODO: anychar need convert line_ending to space.
-                many_till(anychar, many1_count(char(symbol))),
-            )),
-            |(left, (_, right))| left == right,
-        ),
-        |(left, (content, _))| (left, content.len()),
-    )
-}
+use crate::token::{Inline, Span};
 
 fn span(input: &str) -> IResult<&str, &str> {
     context(
         "span",
-        map(factory('`'), |(left, content)| &input[left..left + content]),
+        map(
+            verify(
+                tuple((
+                    many1_count(char('`')),
+                    // TODO: anychar need convert line_ending to space.
+                    many_till(anychar, many1_count(char('`'))),
+                )),
+                |(left, (_, right))| left == right,
+            ),
+            |(left, (content, _))| &input[left..left + content.len()],
+        ),
     )(input)
 }
 

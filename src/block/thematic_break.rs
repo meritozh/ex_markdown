@@ -3,7 +3,7 @@ use nom::{
     combinator::{map, map_parser, value, verify},
     error::context,
     multi::many1_count,
-    sequence::{terminated, tuple},
+    sequence::terminated,
     IResult,
 };
 

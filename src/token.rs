@@ -147,7 +147,7 @@ pub struct Mark<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Strikethrough<'a> {
-    pub children: Vec<Inline<'a>>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -175,8 +175,8 @@ pub struct Image<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Ruby<'a> {
-    pub annotation: Text<'a>,
-    pub children: Vec<Inline<'a>>,
+    pub annotation: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -197,15 +197,15 @@ pub struct Reference<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Subscript<'a> {
-    pub child: Text<'a>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Superscript<'a> {
-    pub child: Text<'a>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Latex<'a> {
-    pub child: Text<'a>,
+    pub content: &'a str,
 }

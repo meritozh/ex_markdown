@@ -11,10 +11,7 @@ use nom::{
 
 use std::cmp::min;
 
-use crate::{
-    inline::parse_inline,
-    token::{Emphasis, EmphasisStyle, Inline},
-};
+use crate::token::{Emphasis, EmphasisStyle, Inline};
 
 fn factory<'a, E: ParseError<&'a str>>(
     symbol: char,
@@ -82,6 +79,10 @@ fn emphasis_test() {
 
 pub fn parse_emphasis(input: &str) -> IResult<&str, Inline> {
     map(emphasis, |(leading, content, style)| {
-        Inline::Emphasis(Emphasis { style: style })
+        Inline::Emphasis(Emphasis {
+            leading,
+            content,
+            style,
+        })
     })(input)
 }

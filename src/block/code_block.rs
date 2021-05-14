@@ -9,7 +9,7 @@ use nom::{
 
 use crate::token::{Block, CodeBlock};
 
-fn property(input: &str) -> IResult<&str, Vec<&str>> {
+fn attributes(input: &str) -> IResult<&str, Vec<&str>> {
     not_line_ending(input).map(|(remain, sub)| (remain, sub.split_whitespace().collect()))
 }
 
@@ -19,7 +19,7 @@ fn code_block(input: &str) -> IResult<&str, (Vec<&str>, &str)> {
         preceded(
             tag("```"),
             separated_pair(
-                property,
+                attributes,
                 line_ending,
                 // TODO: use peek see if there's a line_end before delimiter
                 terminated(take_until("```"), tuple((tag("```"), line_ending))),
@@ -41,7 +41,10 @@ fn code_block_test() {
 }
 
 pub fn parse_code_block(input: &str) -> IResult<&str, Block> {
-    map(code_block, |(property, content)| {
-        Block::CodeBlock(CodeBlock { property, content })
+    map(code_block, |(attributes, content)| {
+        Block::CodeBlock(CodeBlock {
+            attributes,
+            content,
+        })
     })(input)
 }

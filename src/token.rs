@@ -32,7 +32,7 @@ pub struct Container<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct FrontMatter<'a> {
-    pub child: &'a str,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -62,17 +62,17 @@ pub struct Footnote<'a> {
 #[derive(Debug, PartialEq, Eq)]
 pub struct List<'a> {
     pub style: ListStyle,
-    pub indentation: usize,
+    pub level: usize,
     pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Heading<'a> {
     pub level: usize,
-    // pub child: Inline<'a>,
     pub content: &'a str,
 }
 
+/// TODO: is Command duplicated with Container?
 #[derive(Debug, PartialEq, Eq)]
 pub struct Command<'a> {
     pub tag: &'a str,
@@ -81,7 +81,7 @@ pub struct Command<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct CodeBlock<'a> {
-    pub property: Vec<&'a str>,
+    pub attributes: Vec<&'a str>,
     pub content: &'a str,
 }
 
@@ -99,7 +99,6 @@ pub struct Definition<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Inline<'a> {
-    // Raw text without any style, which mean it's the latest node.
     Text(Text<'a>),
     Link(Link<'a>),
     Emphasis(Emphasis<'a>),
@@ -120,12 +119,10 @@ pub enum Inline<'a> {
 pub enum EmphasisStyle {
     Bold,
     Italic,
-    BoldItalic,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Emphasis<'a> {
-    pub leading: Option<&'a str>,
     pub content: &'a str,
     pub style: EmphasisStyle,
 }
@@ -137,10 +134,12 @@ pub struct Text<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Link<'a> {
-    pub title: Text<'a>,
-    pub uri: Text<'a>,
+    pub label: &'a str,
+    pub url: &'a str,
+    pub title: &'a str,
 }
 
+// TODO: consider support custom color?
 #[derive(Debug, PartialEq, Eq)]
 pub struct Mark<'a> {
     pub content: &'a str,
@@ -153,7 +152,7 @@ pub struct Strikethrough<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Underline<'a> {
-    pub children: Vec<Inline<'a>>,
+    pub content: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -170,8 +169,9 @@ pub struct Diff<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Image<'a> {
-    pub title: Text<'a>,
-    pub uri: Text<'a>,
+    pub label: &'a str,
+    pub url: &'a str,
+    pub title: &'a str,
 }
 
 #[derive(Debug, PartialEq, Eq)]

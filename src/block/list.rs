@@ -63,24 +63,24 @@ fn list_test() {
 
 pub fn parse_list(input: &str) -> IResult<&str, Block> {
     alt((
-        map(task_list, |(indentation, checked, content)| {
+        map(task_list, |(level, checked, content)| {
             Block::List(List {
                 style: ListStyle::Task(checked),
-                indentation,
+                level,
                 content,
             })
         }),
-        map(bullet_list, |(indentation, content)| {
+        map(bullet_list, |(level, content)| {
             Block::List(List {
                 style: ListStyle::Bullet,
-                indentation,
+                level,
                 content,
             })
         }),
-        map(number_list, |(indentation, digit, content)| {
+        map(number_list, |(level, digit, content)| {
             Block::List(List {
                 style: ListStyle::Number(digit),
-                indentation,
+                level,
                 content,
             })
         }),

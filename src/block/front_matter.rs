@@ -40,7 +40,7 @@ fn front_matter_test() {
 }
 
 pub fn parse_front_matter(input: &str) -> IResult<&str, Block> {
-    map(front_matter, |child| {
-        Block::FrontMatter(FrontMatter { child })
+    map(front_matter, |content| {
+        Block::FrontMatter(FrontMatter { content })
     })(input)
 }

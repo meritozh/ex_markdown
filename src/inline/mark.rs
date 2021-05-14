@@ -1,5 +1,4 @@
 use nom::{
-    bytes::complete::tag,
     character::complete::{anychar, char},
     combinator::{map, verify},
     error::context,
@@ -8,10 +7,7 @@ use nom::{
     IResult,
 };
 
-use crate::{
-    inline::parse_inline,
-    token::{Inline, Mark},
-};
+use crate::token::{Inline, Mark};
 
 fn mark(input: &str) -> IResult<&str, &str> {
     context(

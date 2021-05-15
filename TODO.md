@@ -17,7 +17,6 @@
 - [x] command
 - [x] container
 - [x] reference
-- [ ] table
 
 ### Inline
 
@@ -43,3 +42,6 @@
 5. make inline parser recursive.
 6. all string should be hold by `Text` token.
 7. `many_till` or `terminated`
+8. use `&str.offset()`
+9. port `take_until_parser_match`
+10. use `trim`

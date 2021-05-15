@@ -27,6 +27,8 @@ use crate::{
     Parser,
 };
 
+use self::footnote::parse_footnote;
+
 pub fn parse_block<'a>(parser: &mut Parser<'a>, input: &'a str) {
     let mut cur_input = input;
     while !cur_input.is_empty() {
@@ -42,6 +44,7 @@ pub fn parse_block<'a>(parser: &mut Parser<'a>, input: &'a str) {
             parse_latex_block,
             parse_list,
             parse_heading,
+            parse_footnote,
             // TODO: The continuation of `parse_blockquote` is special
             parse_blockquote,
             parse_paragraph,

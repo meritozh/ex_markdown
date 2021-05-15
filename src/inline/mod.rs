@@ -1,6 +1,7 @@
 pub(crate) mod diff;
-pub(crate) mod emphasis_link;
 pub(crate) mod latex;
+pub(crate) mod link;
+pub(crate) mod link_and_image;
 pub(crate) mod mark;
 pub(crate) mod reference;
 pub(crate) mod ruby;

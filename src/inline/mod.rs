@@ -1,7 +1,6 @@
 pub(crate) mod diff;
 pub(crate) mod latex;
 pub(crate) mod link;
-pub(crate) mod link_and_image;
 pub(crate) mod mark;
 pub(crate) mod reference;
 pub(crate) mod ruby;
@@ -10,6 +9,8 @@ pub(crate) mod strikethrough;
 pub(crate) mod subscript;
 pub(crate) mod superscript;
 pub(crate) mod text;
+
+mod shared;
 
 use crate::token::Inline;
 

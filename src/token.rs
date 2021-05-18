@@ -136,7 +136,7 @@ pub struct Text<'a> {
 pub struct Link<'a> {
     pub label: &'a str,
     pub url: &'a str,
-    pub title: &'a str,
+    pub title: Option<&'a str>,
 }
 
 // TODO: consider support custom color?

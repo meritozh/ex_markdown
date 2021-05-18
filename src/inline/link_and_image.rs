@@ -53,8 +53,7 @@ fn close(input: &str) -> IResult<&str, DelimiterType> {
     })(input)
 }
 
-pub(crate) fn link_and_image(input: &str) -> IResult<&str, VecDeque<Inline>> {
-    let mut inlines = VecDeque::<Inline>::new();
+fn link_and_image(input: &str) -> IResult<&str, Inline> {
     let mut stack = DelimiterStack::default();
     let mut i = input.clone();
 
@@ -69,7 +68,11 @@ pub(crate) fn link_and_image(input: &str) -> IResult<&str, VecDeque<Inline>> {
         } else if let Ok((o, t)) = close(i) {
             if let Some(e) = stack.0.pop() {
                 match e.delimiter {
-                    DelimiterType::OpenBracket => links.append(Inline::Link(Link { label, title })),
+                    DelimiterType::OpenBracket => {
+                        return Inline::Link(Link {
+                            label: e.
+                        });
+                    }
                 }
             }
         }

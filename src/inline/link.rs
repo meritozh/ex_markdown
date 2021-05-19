@@ -35,7 +35,9 @@ fn destionation(input: &str) -> IResult<&str, &str> {
 }
 
 fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
-    let v: Vec<&str> = input.split_whitespace().collect();
+    // TODO: support balanced parentheses
+    let (_, content) = preceded(char('('), take_until(")"))(input)?;
+    let v: Vec<&str> = content.split_whitespace().collect();
     match v.len() {
         1 => Ok((
             "",

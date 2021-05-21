@@ -45,3 +45,5 @@
 8. use `&str.offset()`
 9. port `take_until_parser_match`
 10. use `trim`
+11. check all `take_until`, do we consume it later?
+12. use pair instead of tuple

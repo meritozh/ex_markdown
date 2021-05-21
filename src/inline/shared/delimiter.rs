@@ -20,9 +20,3 @@ pub(crate) struct Delimiter<'a> {
 
 #[derive(Default)]
 pub(crate) struct DelimiterStack<'a>(pub Vec<Delimiter<'a>>);
-
-pub(crate) fn close(input: &str) -> IResult<&str, DelimiterType> {
-    map(tuple((take_until("]"), char(']'))), |_| {
-        DelimiterType::CloseBracket
-    })(input)
-}

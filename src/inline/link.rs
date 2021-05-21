@@ -1,17 +1,17 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until},
-    character::complete::{anychar, char, space0},
-    combinator::{eof, map, map_parser, peek, recognize},
+    bytes::complete::take_until,
+    character::complete::{anychar, char, space1},
+    combinator::{eof, map, map_parser, recognize},
     error::{context, Error, ErrorKind},
-    multi::many1,
+    multi::{count, many1},
     sequence::{delimited, pair, preceded, tuple},
-    Err, IResult,
+    Err, IResult, Offset, Slice,
 };
 
 use crate::token::{Inline, Link};
 
-use super::shared::delimiter::{close, Delimiter, DelimiterStack, DelimiterType};
+use super::shared::delimiter::{Delimiter, DelimiterStack, DelimiterType};
 
 fn title(input: &str) -> IResult<&str, Option<&str>> {
     map(
@@ -36,70 +36,80 @@ fn destionation(input: &str) -> IResult<&str, &str> {
 
 fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
     // TODO: support balanced parentheses
-    let (_, content) = preceded(char('('), take_until(")"))(input)?;
-    let v: Vec<&str> = content.split_whitespace().collect();
-    match v.len() {
-        1 => Ok((
-            "",
-            (
-                // SAFETY: checked v.len()
-                unsafe { *v.get_unchecked(0) },
-                None,
-            ),
-        )),
+    let (remain, content) = delimited(char('('), take_until(")"), char(')'))(input)?;
+    let len = content.split_whitespace().collect::<Vec<_>>().len();
+    match len {
+        1 => Ok((remain, (content, None))),
         2 => pair(
             map_parser(take_until(" "), destionation),
-            preceded(space0, title),
-        )(input),
+            preceded(space1, title),
+        )(content)
+        .map(|r| (remain, r.1)),
         _ => Err(Err::Error(Error::new("123\n", ErrorKind::TakeUntil))),
     }
 }
 
-fn text(input: &str) -> IResult<&str, &str> {
-    delimited(char('['), take_until("]"), char(']'))(input)
+fn text(input: &str, skip: usize) -> IResult<&str, &str> {
+    let skiped = count(preceded(take_until("]"), char(']')), skip)(input)?;
+    let (remain, _) = take_until("]")(skiped.0)?;
+    char(']')(remain).map(|r| {
+        let offset = input.offset(remain);
+        (r.0, input.slice(..offset))
+    })
 }
 
-fn open_link(input: &str) -> IResult<&str, DelimiterType> {
-    map(alt((take_until("["), peek(tag("[")))), |_| {
+fn open_bracket(input: &str) -> IResult<&str, DelimiterType> {
+    map(preceded(take_until("["), char('[')), |_| {
         DelimiterType::OpenBracket
     })(input)
 }
 
-fn link(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
-    let mut stack = DelimiterStack::default();
-    let mut i = input.clone();
-
-    while eof::<_, nom::error::Error<&str>>(i).is_err() {
-        if let Ok((o, t)) = open_link(i) {
-            stack.0.push(Delimiter {
-                delimiter: t,
-                slice: o,
-                active: true,
-            });
-            // consume "[", then unwrap it, open_link guarantee safety.
-            i = char::<_, (_, ErrorKind)>('[')(o).unwrap().0;
-        } else if close(i).is_ok() {
-            if let Some(e) = stack.0.pop() {
-                match e.delimiter {
-                    DelimiterType::OpenBracket => {
-                        let ret = context("link", tuple((text, destination_and_title)))(e.slice);
-                        if ret.is_err() && !stack.0.is_empty() {
-                            continue;
-                        }
-                    }
-                    _ => unreachable!(),
-                }
-            }
-        }
-    }
-
-    Err(Err::Error(Error::new(input, ErrorKind::Eof)))
+fn close_bracket(input: &str) -> IResult<&str, ()> {
+    preceded(take_until("]"), char(']'))(input).map(|r| (r.0, ()))
 }
 
-pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
-    map(link, |(label, (url, title))| {
-        Inline::Link(Link { label, url, title })
-    })(input)
+fn link<'a>(input: &'a str) -> IResult<&str, (&str, (&str, Option<&str>))> {
+    let parser = |input: &'a str| {
+        let mut inner_close_bracket = 0;
+        let mut stack = DelimiterStack::default();
+        let mut i = input.clone();
+
+        while eof::<_, nom::error::Error<&str>>(i).is_err() {
+            // meet '[', push it into stack.
+            if let Ok((o, t)) = open_bracket(i) {
+                stack.0.push(Delimiter {
+                    delimiter: t,
+                    slice: o,
+                    active: true,
+                });
+                i = o;
+                continue;
+            } else if let Ok((remain, _)) = close_bracket(i) {
+                // if can pair bracket "[]"
+                if let Some(e) = stack.0.pop() {
+                    let res = match e.delimiter {
+                        DelimiterType::OpenBracket => tuple((
+                            |i| text(i, inner_close_bracket),
+                            destination_and_title,
+                        ))(e.slice),
+                        // SAFETY: only push `DelimiterType::OpenBracket` before
+                        _ => unreachable!(),
+                    };
+                    if res.is_ok() {
+                        return res;
+                    } else {
+                        inner_close_bracket += 1;
+                        i = remain;
+                        continue;
+                    }
+                }
+            }
+            break;
+        }
+        Err(Err::Error(Error::new(input, ErrorKind::Eof)))
+    };
+
+    context("link", parser)(input)
 }
 
 #[test]
@@ -107,8 +117,31 @@ fn link_test() {
     assert_eq!(link("[test](url)"), Ok(("", ("test", ("url", None)))));
     assert_eq!(link("[[test](url)"), Ok(("", ("test", ("url", None)))));
     assert_eq!(link("[[test]](url)"), Ok(("", ("[test]", ("url", None)))));
+    assert_eq!(link("[[test](url)]"), Ok(("]", ("test", ("url", None)))));
+    assert_eq!(
+        link("[[test](url 'title')]"),
+        Ok(("]", ("test", ("url", Some("title")))))
+    );
+    assert_eq!(
+        link("[[test](url)](url)"),
+        Ok(("](url)", ("test", ("url", None))))
+    );
+
     assert_eq!(
         link("[test]](url)"),
-        Err(Err::Error(Error::new("[test]](url)", ErrorKind::Char)))
+        Err(Err::Error(Error::new("[test]](url)", ErrorKind::Eof)))
     );
+    assert_eq!(
+        link("[[test](url title)]"),
+        Err(Err::Error(Error::new(
+            "[[test](url title)]",
+            ErrorKind::Eof
+        )))
+    );
+}
+
+pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
+    map(link, |(label, (url, title))| {
+        Inline::Link(Link { label, url, title })
+    })(input)
 }

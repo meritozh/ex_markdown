@@ -1,4 +1,4 @@
-use crate::{block::parse_block, token::Token};
+use crate::{block::parse_block, inline::parse_inline, token::Token};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct Parser<'a> {
@@ -7,7 +7,8 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn run(&mut self, input: &'a str) {
-        parse_block(self, input)
+        parse_block(self, input);
+        parse_inline(input);
     }
 
     pub fn push(&mut self, node: Token<'a>) {

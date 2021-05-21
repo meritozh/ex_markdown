@@ -18,6 +18,6 @@ fn reference_test() {
     assert_eq!(reference("[^label]"), Ok(("", "^label")));
 }
 
-fn parse_reference(input: &str) -> IResult<&str, Inline> {
+pub fn parse_reference(input: &str) -> IResult<&str, Inline> {
     map(reference, |label| Inline::Reference(Reference { label }))(input)
 }

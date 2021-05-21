@@ -11,7 +11,7 @@ use nom::{
 
 use crate::token::{Inline, Link};
 
-use super::shared::delimiter::{Delimiter, DelimiterStack, DelimiterType};
+use super::shared::delimiter::DelimiterStack;
 
 fn title(input: &str) -> IResult<&str, Option<&str>> {
     map(
@@ -58,10 +58,8 @@ fn text(input: &str, skip: usize) -> IResult<&str, &str> {
     })
 }
 
-fn open_bracket(input: &str) -> IResult<&str, DelimiterType> {
-    map(preceded(take_until("["), char('[')), |_| {
-        DelimiterType::OpenBracket
-    })(input)
+fn open_bracket(input: &str) -> IResult<&str, ()> {
+    map(preceded(take_until("["), char('[')), |_| {})(input)
 }
 
 fn close_bracket(input: &str) -> IResult<&str, ()> {
@@ -76,25 +74,14 @@ fn link<'a>(input: &'a str) -> IResult<&str, (&str, (&str, Option<&str>))> {
 
         while eof::<_, nom::error::Error<&str>>(i).is_err() {
             // meet '[', push it into stack.
-            if let Ok((o, t)) = open_bracket(i) {
-                stack.0.push(Delimiter {
-                    delimiter: t,
-                    slice: o,
-                    active: true,
-                });
+            if let Ok((o, _)) = open_bracket(i) {
+                stack.0.push(o);
                 i = o;
                 continue;
             } else if let Ok((remain, _)) = close_bracket(i) {
                 // if can pair bracket "[]"
                 if let Some(e) = stack.0.pop() {
-                    let res = match e.delimiter {
-                        DelimiterType::OpenBracket => tuple((
-                            |i| text(i, inner_close_bracket),
-                            destination_and_title,
-                        ))(e.slice),
-                        // SAFETY: only push `DelimiterType::OpenBracket` before
-                        _ => unreachable!(),
-                    };
+                    let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(e);
                     if res.is_ok() {
                         return res;
                     } else {

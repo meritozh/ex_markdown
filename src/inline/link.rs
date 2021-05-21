@@ -1,8 +1,8 @@
 use nom::{
     branch::alt,
-    bytes::complete::take_until,
+    bytes::complete::{tag, take_until},
     character::complete::{anychar, char, space0},
-    combinator::{eof, map, map_parser, recognize, rest},
+    combinator::{eof, map, map_parser, peek, recognize},
     error::{context, Error, ErrorKind},
     multi::many1,
     sequence::{delimited, pair, preceded, tuple},
@@ -60,14 +60,12 @@ fn text(input: &str) -> IResult<&str, &str> {
 }
 
 fn open_link(input: &str) -> IResult<&str, DelimiterType> {
-    map(take_until("["), |_| DelimiterType::MarkOpenBracket)(input)
+    map(alt((take_until("["), peek(tag("[")))), |_| {
+        DelimiterType::OpenBracket
+    })(input)
 }
 
 fn link(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
-    context("link", tuple((text, destination_and_title)))(input)
-}
-
-pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
     let mut stack = DelimiterStack::default();
     let mut i = input.clone();
 
@@ -78,15 +76,16 @@ pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
                 slice: o,
                 active: true,
             });
-            // consume "![", then unwrap it, open_link guarantee safety.
-            i = preceded(char('['), rest::<_, (_, ErrorKind)>)(o).unwrap().0;
+            // consume "[", then unwrap it, open_link guarantee safety.
+            i = char::<_, (_, ErrorKind)>('[')(o).unwrap().0;
         } else if close(i).is_ok() {
             if let Some(e) = stack.0.pop() {
                 match e.delimiter {
                     DelimiterType::OpenBracket => {
-                        return map(link, |(label, (url, title))| {
-                            Inline::Link(Link { label, url, title })
-                        })(e.slice);
+                        let ret = context("link", tuple((text, destination_and_title)))(e.slice);
+                        if ret.is_err() && !stack.0.is_empty() {
+                            continue;
+                        }
                     }
                     _ => unreachable!(),
                 }
@@ -95,4 +94,21 @@ pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
     }
 
     Err(Err::Error(Error::new(input, ErrorKind::Eof)))
+}
+
+pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
+    map(link, |(label, (url, title))| {
+        Inline::Link(Link { label, url, title })
+    })(input)
+}
+
+#[test]
+fn link_test() {
+    assert_eq!(link("[test](url)"), Ok(("", ("test", ("url", None)))));
+    assert_eq!(link("[[test](url)"), Ok(("", ("test", ("url", None)))));
+    assert_eq!(link("[[test]](url)"), Ok(("", ("[test]", ("url", None)))));
+    assert_eq!(
+        link("[test]](url)"),
+        Err(Err::Error(Error::new("[test]](url)", ErrorKind::Char)))
+    );
 }

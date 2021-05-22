@@ -171,7 +171,7 @@ pub struct Diff<'a> {
 pub struct Image<'a> {
     pub label: &'a str,
     pub url: &'a str,
-    pub title: &'a str,
+    pub title: Option<&'a str>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

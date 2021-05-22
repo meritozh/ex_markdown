@@ -1,4 +1,5 @@
 pub(crate) mod diff;
+pub(crate) mod image;
 pub(crate) mod latex;
 pub(crate) mod link;
 pub(crate) mod mark;
@@ -17,7 +18,7 @@ use nom::branch::alt;
 use crate::token::Inline;
 
 use self::{
-    diff::parse_diff, latex::parse_latex, link::parse_link, mark::parse_mark,
+    diff::parse_diff, image::parse_image, latex::parse_latex, link::parse_link, mark::parse_mark,
     reference::parse_reference, ruby::parse_ruby, span::parse_span,
     strikethrough::parse_strikethrough, subscript::parse_subscript, superscript::parse_superscript,
     text::parse_text,
@@ -32,6 +33,7 @@ pub fn parse_inline(input: &str) -> Vec<Inline> {
             parse_diff,
             parse_latex,
             parse_link,
+            parse_image,
             parse_mark,
             parse_reference,
             parse_ruby,

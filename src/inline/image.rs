@@ -1,6 +1,6 @@
 use nom::{
     branch::alt,
-    bytes::complete::take_until,
+    bytes::complete::{tag, take_until},
     character::complete::{anychar, char, space1},
     combinator::{eof, map, map_parser, recognize},
     error::{context, Error, ErrorKind},
@@ -9,7 +9,7 @@ use nom::{
     Err, IResult, Offset, Slice,
 };
 
-use crate::token::{Inline, Link};
+use crate::token::{Image, Inline};
 
 use super::shared::delimiter::{Delimiter, DelimiterStack, DelimiterType};
 
@@ -35,7 +35,6 @@ fn destionation(input: &str) -> IResult<&str, &str> {
 }
 
 fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
-    // TODO: support balanced parentheses
     let (remain, content) = delimited(char('('), take_until(")"), char(')'))(input)?;
     let len = content.split_whitespace().collect::<Vec<_>>().len();
     match len {
@@ -50,8 +49,8 @@ fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
 }
 
 fn text(input: &str, skip: usize) -> IResult<&str, &str> {
-    let skiped = count(preceded(take_until("]"), char(']')), skip)(input)?;
-    let (remain, _) = take_until("]")(skiped.0)?;
+    let skip = count(preceded(take_until("]"), char(']')), skip)(input)?;
+    let (remain, _) = take_until("]")(skip.0)?;
     char(']')(remain).map(|r| {
         let offset = input.offset(remain);
         (r.0, input.slice(..offset))
@@ -59,9 +58,14 @@ fn text(input: &str, skip: usize) -> IResult<&str, &str> {
 }
 
 fn open_bracket(input: &str) -> IResult<&str, DelimiterType> {
-    map(preceded(take_until("["), char('[')), |_| {
-        DelimiterType::OpenBracket
-    })(input)
+    alt((
+        map(preceded(take_until("!["), tag("![")), |_| {
+            DelimiterType::MarkOpenBracket
+        }),
+        map(preceded(take_until("["), char('[')), |_| {
+            DelimiterType::OpenBracket
+        }),
+    ))(input)
 }
 
 fn close_bracket(input: &str) -> IResult<&str, ()> {
@@ -74,7 +78,6 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
     let mut i = input.clone();
 
     while eof::<_, nom::error::Error<&str>>(i).is_err() {
-        // meet '[', push it into stack.
         if let Ok((o, t)) = open_bracket(i) {
             stack.0.push(Delimiter {
                 delimiter: t,
@@ -83,7 +86,6 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
             i = o;
             continue;
         } else if let Ok((remain, _)) = close_bracket(i) {
-            // if can pair bracket "[]"
             if let Some(e) = stack.0.pop() {
                 let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(e.slice);
                 if res.is_ok() {
@@ -101,40 +103,40 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
     Err(Err::Error(Error::new(input, ErrorKind::Eof)))
 }
 
-fn link(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
-    context("link", stack)(input)
+fn image(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
+    context("image", stack)(input)
 }
 
 #[test]
-fn link_test() {
-    assert_eq!(link("[test](url)"), Ok(("", ("test", ("url", None)))));
-    assert_eq!(link("[[test](url)"), Ok(("", ("test", ("url", None)))));
-    assert_eq!(link("[[test]](url)"), Ok(("", ("[test]", ("url", None)))));
-    assert_eq!(link("[[test](url)]"), Ok(("]", ("test", ("url", None)))));
+fn image_test() {
+    assert_eq!(image("![test](url)"), Ok(("", ("test", ("url", None)))));
+    assert_eq!(image("![![test](url)"), Ok(("", ("test", ("url", None)))));
+    assert_eq!(image("![[test]](url)"), Ok(("", ("[test]", ("url", None)))));
+    assert_eq!(image("[![test](url)]"), Ok(("]", ("test", ("url", None)))));
     assert_eq!(
-        link("[[test](url 'title')]"),
+        image("[![test](url 'title')]"),
         Ok(("]", ("test", ("url", Some("title")))))
     );
     assert_eq!(
-        link("[[test](url)](url)"),
+        image("[![test](url)](url)"),
         Ok(("](url)", ("test", ("url", None))))
     );
 
     assert_eq!(
-        link("[test]](url)"),
-        Err(Err::Error(Error::new("[test]](url)", ErrorKind::Eof)))
+        image("![test]](url)"),
+        Err(Err::Error(Error::new("![test]](url)", ErrorKind::Eof)))
     );
     assert_eq!(
-        link("[[test](url title)]"),
+        image("![![test](url title)]"),
         Err(Err::Error(Error::new(
-            "[[test](url title)]",
+            "![![test](url title)]",
             ErrorKind::Eof
         )))
     );
 }
 
-pub(crate) fn parse_link(input: &str) -> IResult<&str, Inline> {
-    map(link, |(label, (url, title))| {
-        Inline::Link(Link { label, url, title })
+pub(crate) fn parse_image(input: &str) -> IResult<&str, Inline> {
+    map(image, |(label, (url, title))| {
+        Inline::Image(Image { label, url, title })
     })(input)
 }

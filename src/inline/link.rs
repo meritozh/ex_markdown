@@ -58,6 +58,7 @@ fn text(input: &str, skip: usize) -> IResult<&str, &str> {
     })
 }
 
+// TODO: need exclude "!["
 fn open_bracket(input: &str) -> IResult<&str, DelimiterType> {
     map(preceded(take_until("["), char('[')), |_| {
         DelimiterType::OpenBracket
@@ -73,26 +74,34 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
     let mut stack = DelimiterStack::default();
     let mut i = input.clone();
 
-    while eof::<_, nom::error::Error<&str>>(i).is_err() {
+    while eof::<_, Error<&str>>(i).is_err() {
         // meet '[', push it into stack.
         if let Ok((o, t)) = open_bracket(i) {
             stack.0.push(Delimiter {
                 delimiter: t,
                 slice: o,
+                active: true,
             });
             i = o;
             continue;
         } else if let Ok((remain, _)) = close_bracket(i) {
             // if can pair bracket "[]"
             if let Some(e) = stack.0.pop() {
-                let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(e.slice);
-                if res.is_ok() {
-                    return res;
-                } else {
-                    inner_close_bracket += 1;
-                    i = remain;
-                    continue;
+                match e.delimiter {
+                    DelimiterType::OpenBracket => {
+                        let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(
+                            e.slice,
+                        );
+                        if res.is_ok() {
+                            return res;
+                        } else {
+                            inner_close_bracket += 1;
+                            i = remain;
+                        }
+                    }
+                    _ => unreachable!(),
                 }
+                continue;
             }
         }
         break;

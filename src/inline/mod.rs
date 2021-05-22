@@ -1,4 +1,5 @@
 pub(crate) mod diff;
+pub(crate) mod emphasis;
 pub(crate) mod image;
 pub(crate) mod latex;
 pub(crate) mod link;

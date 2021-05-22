@@ -77,24 +77,36 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
     let mut stack = DelimiterStack::default();
     let mut i = input.clone();
 
-    while eof::<_, nom::error::Error<&str>>(i).is_err() {
+    while eof::<_, Error<&str>>(i).is_err() {
         if let Ok((o, t)) = open_bracket(i) {
             stack.0.push(Delimiter {
                 delimiter: t,
                 slice: o,
+                active: true,
             });
             i = o;
             continue;
         } else if let Ok((remain, _)) = close_bracket(i) {
             if let Some(e) = stack.0.pop() {
-                let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(e.slice);
-                if res.is_ok() {
-                    return res;
-                } else {
-                    inner_close_bracket += 1;
-                    i = remain;
-                    continue;
+                match e.delimiter {
+                    DelimiterType::MarkOpenBracket => {
+                        let res = tuple((|i| text(i, inner_close_bracket), destination_and_title))(
+                            e.slice,
+                        );
+                        if res.is_ok() {
+                            return res;
+                        } else {
+                            inner_close_bracket += 1;
+                            i = remain;
+                        }
+                    }
+                    DelimiterType::OpenBracket => {
+                        inner_close_bracket += 1;
+                        i = remain;
+                    }
+                    _ => unreachable!(),
                 }
+                continue;
             }
         }
         break;

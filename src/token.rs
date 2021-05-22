@@ -119,6 +119,7 @@ pub enum Inline<'a> {
 pub enum EmphasisStyle {
     Bold,
     Italic,
+    BoldItalic,
 }
 
 #[derive(Debug, PartialEq, Eq)]

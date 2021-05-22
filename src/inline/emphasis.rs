@@ -1,62 +1,49 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until},
     character::complete::{char, space0, space1},
-    combinator::{eof, map, not, peek, verify},
+    combinator::{eof, map, not, peek},
     error::{context, Error, ErrorKind},
     multi::many1_count,
     sequence::{preceded, terminated},
-    Err, IResult, Offset, Parser, Slice,
+    Err, IResult, Offset, Slice,
 };
 
-use crate::token::EmphasisStyle;
+use crate::{token::EmphasisStyle, utils::nom_extend::take_until_parser_matches};
 
 use super::shared::delimiter::{
     decrease_delimiter_count, get_delimiter_associate_count, is_same_delimiter_type, Delimiter,
     DelimiterStack, DelimiterType,
 };
 
-fn not_preceed_with(tag: &str) -> impl Parser<&str, (), Error<&str>> {
-    map(
-        verify(take_until(tag), |s: &&str| {
-            !s.is_empty() && !s.ends_with(" ")
-        }),
-        |_| (),
-    )
+fn mark(input: &str) -> IResult<&str, char> {
+    alt((char('*'), char('_')))(input)
 }
 
 fn left_flank(input: &str) -> IResult<&str, DelimiterType> {
-    alt((
-        terminated(
-            map(preceded(space0, many1_count(char('*'))), |c| {
-                DelimiterType::Asterisk(c)
-            }),
-            peek(not(space1)),
-        ),
-        terminated(
-            map(preceded(space0, many1_count(char('_'))), |c| {
-                DelimiterType::Underline(c)
-            }),
-            peek(not(space1)),
-        ),
-    ))(input)
+    let ch = mark(input)?.1;
+
+    terminated(
+        map(preceded(space0, many1_count(char(ch))), move |c| match ch {
+            '*' => DelimiterType::Asterisk(c),
+            '_' => DelimiterType::Underline(c),
+            _ => unreachable!(),
+        }),
+        not(space1),
+    )(input)
 }
 
 fn right_flank(input: &str) -> IResult<&str, DelimiterType> {
-    alt((
-        preceded(
-            not_preceed_with("*"),
-            map(terminated(many1_count(char('*')), peek(space0)), |c| {
-                DelimiterType::Asterisk(c)
-            }),
-        ),
-        preceded(
-            not_preceed_with("_"),
-            map(terminated(many1_count(char('_')), peek(space0)), |c| {
-                DelimiterType::Underline(c)
-            }),
-        ),
-    ))(input)
+    let i = take_until_parser_matches(mark)(input)?.0;
+    let ch = mark(i)?.1;
+
+    map(
+        terminated(many1_count(char(ch)), peek(space0)),
+        move |c| match ch {
+            '*' => DelimiterType::Asterisk(c),
+            '_' => DelimiterType::Underline(c),
+            _ => unreachable!(),
+        },
+    )(input)
 }
 
 fn count_to_emphasis(count: usize) -> EmphasisStyle {
@@ -154,14 +141,14 @@ fn emphasis(input: &str) -> IResult<&str, EmphasisStack> {
 
 #[test]
 fn emphasis_test() {
-    // assert_eq!(
-    //     emphasis("**test**"),
-    //     Ok(("", vec![("test", EmphasisStyle::Bold)]))
-    // );
-    // assert_eq!(
-    //     emphasis("***test***"),
-    //     Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))
-    // );
+    assert_eq!(
+        emphasis("**test**"),
+        Ok(("", vec![("test", EmphasisStyle::Bold)]))
+    );
+    assert_eq!(
+        emphasis("***test***"),
+        Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))
+    );
     assert_eq!(
         emphasis("**_test_**"),
         Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))

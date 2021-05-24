@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub(crate) enum DelimiterType {
     // [
     OpenBracket,
@@ -9,19 +10,20 @@ pub(crate) enum DelimiterType {
     Underline(usize),
 }
 
+#[derive(Debug)]
 pub(crate) struct Delimiter<'a> {
     pub delimiter: DelimiterType,
     pub slice: &'a str,
     pub active: bool,
 }
 
-#[derive(Default)]
-pub(crate) struct DelimiterStack<'a>(pub Vec<Delimiter<'a>>);
+#[derive(Default, Debug)]
+pub(crate) struct DelimiterStack<'a>(pub(crate) Vec<Delimiter<'a>>);
 
 pub(crate) fn is_same_delimiter_type(a: &DelimiterType, b: &DelimiterType) -> bool {
     match (a, b) {
-        (DelimiterType::Asterisk(_), DelimiterType::Asterisk(_)) => true,
-        (DelimiterType::Underline(_), DelimiterType::Underline(_)) => true,
+        (&DelimiterType::Asterisk(_), &DelimiterType::Asterisk(_)) => true,
+        (&DelimiterType::Underline(_), &DelimiterType::Underline(_)) => true,
         _ => false,
     }
 }

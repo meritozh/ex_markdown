@@ -115,7 +115,7 @@ pub enum Inline<'a> {
     Latex(Latex<'a>),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum EmphasisStyle {
     Bold,
     Italic,

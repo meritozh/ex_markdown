@@ -43,7 +43,7 @@ fn right_flank(input: &str) -> IResult<&str, DelimiterType> {
             '_' => DelimiterType::Underline(c),
             _ => unreachable!(),
         },
-    )(input)
+    )(i)
 }
 
 fn count_to_emphasis(count: usize) -> EmphasisStyle {

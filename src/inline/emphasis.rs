@@ -8,7 +8,10 @@ use nom::{
     Err, IResult, Offset, Slice,
 };
 
-use crate::{token::EmphasisStyle, utils::nom_extend::take_until_parser_matches};
+use crate::{
+    token::{Emphasis, EmphasisStyle, Inline},
+    utils::nom_extend::take_until_parser_matches,
+};
 
 use super::shared::delimiter::{
     decrease_delimiter_count, get_delimiter_associate_count, is_same_delimiter_type, Delimiter,
@@ -51,9 +54,9 @@ fn right_flank(input: &str) -> IResult<&str, DelimiterType> {
 
 fn count_to_emphasis(count: usize) -> EmphasisStyle {
     match count {
-        1 => EmphasisStyle::Italic,
-        x if x % 2 == 0 => EmphasisStyle::Bold,
-        x if x % 2 == 1 => EmphasisStyle::BoldItalic,
+        1 => EmphasisStyle::ITALIC,
+        x if x % 2 == 0 => EmphasisStyle::BOLD,
+        x if x % 2 == 1 => EmphasisStyle::BOLDITALIC,
         _ => unreachable!(),
     }
 }
@@ -111,35 +114,6 @@ fn truncate_until_matched_delimiter<'a>(
         }
         _ => unreachable!(),
     }
-}
-
-fn compare_two_str(a: &str, b: &str) -> bool {
-    a.as_ptr() == b.as_ptr() && a.len() == b.len()
-}
-
-fn reduce_emphasis<'a>(stack: &EmphasisStack<'a>) -> EmphasisStack<'a> {
-    assert!(!stack.is_empty());
-
-    let mut res = EmphasisStack::<'a>::default();
-    let mut iter = stack.iter().rev();
-
-    // SAFETY: call site checked stack is not empty
-    let mut accu = iter.next().unwrap();
-    while let Some(e) = iter.next() {
-        let len = e.0.len();
-        let can_reduce = match accu.1 {
-            EmphasisStyle::Bold => compare_two_str((*e).0.slice(2..len - 2), accu.0),
-            EmphasisStyle::Italic => compare_two_str((*e).0.slice(1..len - 1), accu.0),
-            EmphasisStyle::BoldItalic => compare_two_str((*e).0.slice(3..len - 3), accu.0),
-        };
-    }
-
-    // while let Some(x) = self.next() {
-    //     accum = f(accum, x);
-    // }
-    // accum
-
-    res
 }
 
 fn stack(input: &str) -> IResult<&str, EmphasisStack> {
@@ -207,20 +181,35 @@ fn emphasis(input: &str) -> IResult<&str, EmphasisStack> {
 
 #[test]
 fn emphasis_test() {
-    // assert_eq!(
-    //     emphasis("**test**"),
-    //     Ok(("", vec![("test", EmphasisStyle::Bold)]))
-    // );
-    // assert_eq!(
-    //     emphasis("***test***"),
-    //     Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))
-    // );
+    assert_eq!(
+        emphasis("**test**"),
+        Ok(("", vec![("test", EmphasisStyle::BOLD)]))
+    );
+    assert_eq!(
+        emphasis("***test***"),
+        Ok(("", vec![("test", EmphasisStyle::BOLDITALIC)]))
+    );
     assert_eq!(
         emphasis("**_test_**"),
-        Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))
+        Ok((
+            "",
+            vec![
+                ("test", EmphasisStyle::ITALIC),
+                ("_test_", EmphasisStyle::BOLD)
+            ]
+        ))
     );
-    assert_eq!(
-        emphasis("*__test__*"),
-        Ok(("", vec![("test", EmphasisStyle::BoldItalic)]))
-    );
+}
+
+pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
+    map(emphasis, |r| {
+        r.iter()
+            .map(|(content, style)| {
+                Inline::Emphasis(Emphasis {
+                    content,
+                    style: *style,
+                })
+            })
+            .collect()
+    })(input)
 }

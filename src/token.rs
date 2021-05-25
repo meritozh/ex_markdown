@@ -1,5 +1,7 @@
 use std::usize;
 
+use bitflags::bitflags;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token<'a> {
     Block(Block<'a>),
@@ -115,11 +117,12 @@ pub enum Inline<'a> {
     Latex(Latex<'a>),
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum EmphasisStyle {
-    Bold,
-    Italic,
-    BoldItalic,
+bitflags! {
+    pub struct EmphasisStyle : u8 {
+        const BOLD = 0b001;
+        const ITALIC = 0b010;
+        const BOLDITALIC = Self::BOLD.bits | Self::ITALIC.bits;
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

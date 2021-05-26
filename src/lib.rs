@@ -9,6 +9,6 @@ use parser::Parser;
 
 pub fn markdown(input: &str) -> Parser {
     let mut parser: Parser = Default::default();
-    parser.run(input);
+
     parser
 }

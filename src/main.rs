@@ -10,6 +10,5 @@ fn main() {
     let mut document = String::new();
 
     file.read_to_string(&mut document).unwrap();
-    let parser = markdown(&document);
-    println!("{:#?}", parser.nodes);
+    let _ = markdown(&document);
 }

@@ -24,7 +24,7 @@ fn container<'a>(input: &'a str) -> IResult<&'a str, (&'a str, &'a str)> {
 fn container_test() {
     assert_eq!(
         container("::: warning\ncontent here\n:::\n"),
-        Ok(("", ("warning", "content here")))
+        Ok(("", ("warning", "content here\n")))
     );
 }
 

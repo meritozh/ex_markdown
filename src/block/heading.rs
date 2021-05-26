@@ -2,7 +2,7 @@ use nom::{
     character::complete::{char, line_ending, not_line_ending, space1},
     combinator::{map, verify},
     error::context,
-    multi::many_m_n,
+    multi::many1_count,
     sequence::{separated_pair, terminated},
     IResult,
 };
@@ -19,7 +19,7 @@ fn heading(input: &str) -> IResult<&str, (usize, &str)> {
     context(
         "heading",
         separated_pair(
-            map(many_m_n(1, 6, char('#')), |matched| matched.len()),
+            verify(many1_count(char('#')), |c| *c <= 6),
             space1,
             verify(
                 terminated(not_line_ending, line_ending),
@@ -36,15 +36,15 @@ fn heading_test() {
     assert_eq!(heading("###### 123\nabc"), Ok(("abc", (6, "123"))));
     assert_eq!(
         heading("###"),
-        Err(Err::Error(Error::new("", ErrorKind::Char)))
+        Err(Err::Error(Error::new("", ErrorKind::Space)))
     );
     assert_eq!(
         heading("### "),
-        Err(Err::Error(Error::new("", ErrorKind::Verify)))
+        Err(Err::Error(Error::new("", ErrorKind::CrLf)))
     );
     assert_eq!(
         heading("######123"),
-        Err(Err::Error(Error::new("123", ErrorKind::Char)))
+        Err(Err::Error(Error::new("123", ErrorKind::Space)))
     );
     assert_eq!(
         heading("####### 123"),

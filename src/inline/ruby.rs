@@ -1,10 +1,10 @@
 use nom::{
     bytes::complete::take_until,
     character::complete::char,
-    combinator::{map, verify},
+    combinator::{map, map_parser, rest, verify},
     error::context,
     multi::separated_list1,
-    sequence::delimited,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
@@ -15,14 +15,9 @@ fn ruby(input: &str) -> IResult<&str, (&str, &str)> {
         "ruby",
         delimited(
             char('{'),
-            map(
-                verify(
-                    separated_list1(char('|'), take_until("|")),
-                    |v: &Vec<_>| v.len() == 2,
-                ),
-                |v: Vec<&str>| 
-                // SAFETY: checked length in verify
-                unsafe { (*v.get_unchecked(0), *v.get_unchecked(1)) },
+            map_parser(
+                take_until("}"),
+                tuple((take_until("|"), preceded(char('|'), rest))),
             ),
             char('}'),
         ),
@@ -38,7 +33,7 @@ pub fn parse_ruby(input: &str) -> IResult<&str, Inline> {
     map(ruby, |(content, annotation)| {
         Inline::Ruby(Ruby {
             content,
-            annotation
+            annotation,
         })
     })(input)
 }

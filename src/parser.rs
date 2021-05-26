@@ -1,17 +1,36 @@
-use crate::{block::parse_block, inline::parse_inline, token::Token};
+use id_tree::{InsertBehavior::*, Node, Tree};
 
-#[derive(Default, Debug, PartialEq, Eq)]
+use crate::{block, token::Token};
+
+#[derive(Default, Debug, PartialEq)]
 pub struct Parser<'a> {
-    pub nodes: Vec<Token<'a>>,
+    tree: Tree<Token<'a>>,
 }
 
 impl<'a> Parser<'a> {
-    pub fn run(&mut self, input: &'a str) {
-        parse_block(self, input);
-        parse_inline(input);
-    }
+    pub fn ext(&mut self, input: &'a str) {
+        // construct Document node as root
+        let root = self
+            .tree
+            .insert(Node::new(Token::Document(input)), AsRoot)
+            .unwrap();
 
-    pub fn push(&mut self, node: Token<'a>) {
-        self.nodes.push(node);
+        let mut next = input;
+
+        // front_matter must parse first
+        if let Ok((i, token)) = block::parse_front_matter(next) {
+            let _ = self
+                .tree
+                .insert(Node::new(Token::Block(token)), UnderNode(&root));
+            next = i;
+        }
+
+        // block level first pass
+        while let Ok((i, token)) = block::parse_first_pass(next) {
+            let _ = self
+                .tree
+                .insert(Node::new(Token::Block(token)), UnderNode(&root));
+            next = i;
+        }
     }
 }

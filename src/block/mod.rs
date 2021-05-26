@@ -7,50 +7,43 @@ pub(crate) mod definition;
 pub(crate) mod footnote;
 pub(crate) mod front_matter;
 pub(crate) mod heading;
+pub(crate) mod import;
 pub(crate) mod latex_block;
 pub(crate) mod list;
 pub(crate) mod paragraph;
 pub(crate) mod thematic_break;
 pub(crate) mod toc;
 
-use nom::branch::alt;
+use nom::{branch::alt, IResult};
 
 use crate::{
     block::{
         blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
-        command::parse_command, container::parse_container, definition::parse_definition,
-        front_matter::parse_front_matter, heading::parse_heading, latex_block::parse_latex_block,
-        list::parse_list, paragraph::parse_paragraph, thematic_break::parse_thematic_break,
-        toc::parse_toc,
+        container::parse_container, definition::parse_definition, heading::parse_heading,
+        import::parse_import, latex_block::parse_latex_block, list::parse_list,
+        paragraph::parse_paragraph, thematic_break::parse_thematic_break, toc::parse_toc,
     },
-    token::Token,
-    Parser,
+    token::Block,
 };
 
-use self::footnote::parse_footnote;
+pub(crate) use self::front_matter::parse_front_matter;
+use self::{command::parse_command, footnote::parse_footnote};
 
-pub fn parse_block<'a>(parser: &mut Parser<'a>, input: &'a str) {
-    let mut cur_input = input;
-    while !cur_input.is_empty() {
-        let (next_input, token) = alt((
-            parse_toc,
-            parse_definition,
-            parse_front_matter,
-            parse_blank_line,
-            parse_thematic_break,
-            parse_container,
-            parse_command,
-            parse_code_block,
-            parse_latex_block,
-            parse_list,
-            parse_heading,
-            parse_footnote,
-            // TODO: The continuation of `parse_blockquote` is special
-            parse_blockquote,
-            parse_paragraph,
-        ))(cur_input)
-        .unwrap();
-        parser.push(Token::Block(token));
-        cur_input = next_input;
-    }
+pub fn parse_first_pass(input: &str) -> IResult<&str, Block> {
+    alt((
+        parse_thematic_break,
+        parse_heading,
+        parse_toc,
+        parse_code_block,
+        parse_latex_block,
+        parse_import,
+        parse_command,
+        parse_footnote,
+        parse_blockquote,
+        parse_container,
+        parse_definition,
+        parse_list,
+        parse_paragraph,
+        parse_blank_line,
+    ))(input)
 }

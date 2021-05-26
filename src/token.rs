@@ -4,6 +4,7 @@ use bitflags::bitflags;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token<'a> {
+    Document(&'a str),
     Block(Block<'a>),
     Inline(Inline<'a>),
 }
@@ -15,6 +16,7 @@ pub enum Block<'a> {
     BlockQuote(BlockQuote<'a>),
     List(List<'a>),
     Heading(Heading<'a>),
+    Import(Import<'a>),
     Command(Command<'a>),
     CodeBlock(CodeBlock<'a>),
     LatexBlock(LatexBlock<'a>),
@@ -50,7 +52,7 @@ pub struct BlockQuote<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ListStyle {
-    Number(u32),
+    Number(u8),
     Bullet,
     Task(bool),
 }
@@ -72,6 +74,11 @@ pub struct List<'a> {
 pub struct Heading<'a> {
     pub level: usize,
     pub content: &'a str,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Import<'a> {
+    pub path: &'a str,
 }
 
 /// TODO: is Command duplicated with Container?
@@ -96,7 +103,7 @@ pub struct LatexBlock<'a> {
 pub struct Definition<'a> {
     pub label: &'a str,
     pub url: &'a str,
-    pub title: &'a str,
+    pub title: Option<&'a str>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

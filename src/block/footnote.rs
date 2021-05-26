@@ -25,7 +25,7 @@ fn footnote(input: &str) -> IResult<&str, (&str, &str)> {
 
 #[test]
 fn footnote_test() {
-    assert_eq!(footnote("[^test]: hahaha"), Ok(("", ("^test", "hahaha"))))
+    assert_eq!(footnote("[^test]: hahaha\n"), Ok(("", ("^test", "hahaha"))))
 }
 
 pub fn parse_footnote(input: &str) -> IResult<&str, Block> {

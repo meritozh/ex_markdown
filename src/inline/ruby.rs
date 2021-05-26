@@ -1,9 +1,8 @@
 use nom::{
     bytes::complete::take_until,
     character::complete::char,
-    combinator::{map, map_parser, rest, verify},
+    combinator::{map, map_parser, rest},
     error::context,
-    multi::separated_list1,
     sequence::{delimited, preceded, tuple},
     IResult,
 };

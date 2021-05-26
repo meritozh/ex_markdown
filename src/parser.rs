@@ -4,7 +4,7 @@ use crate::{block, token::Token};
 
 #[derive(Default, Debug, PartialEq)]
 pub struct Parser<'a> {
-    tree: Tree<Token<'a>>,
+    pub tree: Tree<Token<'a>>,
 }
 
 impl<'a> Parser<'a> {

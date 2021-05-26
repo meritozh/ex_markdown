@@ -43,7 +43,7 @@ pub fn parse_first_pass(input: &str) -> IResult<&str, Block> {
         parse_container,
         parse_definition,
         parse_list,
-        parse_paragraph,
         parse_blank_line,
+        parse_paragraph,
     ))(input)
 }

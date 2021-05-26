@@ -1,4 +1,4 @@
-use ex_markdown::markdown;
+use ex_markdown::parse_markdown;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -10,5 +10,5 @@ fn main() {
     let mut document = String::new();
 
     file.read_to_string(&mut document).unwrap();
-    let _ = markdown(&document);
+    parse_markdown(&document).unwrap();
 }

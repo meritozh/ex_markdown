@@ -51,10 +51,9 @@ $$
 here is an error message.
 :::
 
-
-{{ js
+<<< js
 let num = 1;
 let add = (x) { return x + 1; };
-}}
+<<<
 
-[detail]: detail lalala
+[detail]: detail "lalala"

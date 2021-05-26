@@ -19,15 +19,15 @@ use nom::{branch::alt, IResult};
 use crate::{
     block::{
         blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
-        container::parse_container, definition::parse_definition, heading::parse_heading,
-        import::parse_import, latex_block::parse_latex_block, list::parse_list,
-        paragraph::parse_paragraph, thematic_break::parse_thematic_break, toc::parse_toc,
+        command::parse_command, container::parse_container, definition::parse_definition,
+        footnote::parse_footnote, heading::parse_heading, import::parse_import,
+        latex_block::parse_latex_block, list::parse_list, paragraph::parse_paragraph,
+        thematic_break::parse_thematic_break, toc::parse_toc,
     },
     token::Block,
 };
 
 pub(crate) use self::front_matter::parse_front_matter;
-use self::{command::parse_command, footnote::parse_footnote};
 
 pub fn parse_first_pass(input: &str) -> IResult<&str, Block> {
     alt((

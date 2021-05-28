@@ -16,7 +16,11 @@ fn bullet_list(input: &str) -> IResult<&str, (usize, &str)> {
         "bullet list",
         map_parser(
             terminated(not_line_ending, line_ending),
-            separated_pair(many0_count(char(' ')), tuple((char('-'), space1)), rest),
+            separated_pair(
+                map(many0_count(char(' ')), |c| c / 2),
+                tuple((char('-'), space1)),
+                rest,
+            ),
         ),
     )(input)
 }
@@ -28,7 +32,7 @@ fn number_list(input: &str) -> IResult<&str, ((usize, u8), &str)> {
             terminated(not_line_ending, line_ending),
             separated_pair(
                 tuple((
-                    many0_count(char(' ')),
+                    map(many0_count(char(' ')), |c| c / 2),
                     map_res(digit1, |s: &str| s.parse::<u8>()),
                 )),
                 tuple((char('.'), space1)),
@@ -45,7 +49,7 @@ fn task_list(input: &str) -> IResult<&str, ((usize, bool), &str)> {
             terminated(not_line_ending, line_ending),
             separated_pair(
                 separated_pair(
-                    many0_count(char(' ')),
+                    map(many0_count(char(' ')), |c| c / 2),
                     tag("- "),
                     alt((value(false, tag("[ ]")), value(true, tag("[x]")))),
                 ),

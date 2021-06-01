@@ -1,22 +1,22 @@
-pub(crate) mod diff;
-pub(crate) mod emphasis;
-pub(crate) mod image;
-pub(crate) mod latex;
-pub(crate) mod link;
-pub(crate) mod mark;
-pub(crate) mod reference;
-pub(crate) mod ruby;
-pub(crate) mod span;
-pub(crate) mod strikethrough;
-pub(crate) mod subscript;
-pub(crate) mod superscript;
-pub(crate) mod text;
+mod diff;
+mod emphasis;
+mod image;
+mod latex;
+mod link;
+mod mark;
+mod reference;
+mod ruby;
+mod span;
+mod strikethrough;
+mod subscript;
+mod superscript;
+mod text;
 
 mod shared;
 
 use nom::branch::alt;
 
-use crate::token::Inline;
+use super::token::Inline;
 
 use self::{
     diff::parse_diff, image::parse_image, latex::parse_latex, link::parse_link, mark::parse_mark,

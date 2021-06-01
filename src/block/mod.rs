@@ -49,6 +49,14 @@ fn parse_block(input: &str) -> IResult<&str, Block> {
     ))(input)
 }
 
+fn push_token<'a>(t: Block<'a>, parent: &NodeId, parser: &mut Parser<'a>) -> NodeId {
+    let node_id = parser
+        .tree
+        .insert(Node::new(Token::Block(t)), UnderNode(&parent))
+        .unwrap();
+    node_id
+}
+
 pub(crate) fn parse_front_matter<'a>(
     input: &'a str,
     parent: &NodeId,
@@ -60,7 +68,7 @@ pub(crate) fn parse_front_matter<'a>(
             .insert(Node::new(Token::Block(t)), UnderNode(&parent));
         return i;
     }
-    return input;
+    input
 }
 
 pub(crate) fn parse_first_pass<'a>(
@@ -72,27 +80,19 @@ pub(crate) fn parse_first_pass<'a>(
     while let Ok((i, t)) = parse_block(next) {
         match t {
             Block::Definition(_) => {
-                let node_id = push_token(t, parser, parent);
+                let node_id = push_token(t, parent, parser);
                 parser.definitions.push(node_id);
             }
             Block::Heading(_) => {
-                let node_id = push_token(t, parser, parent);
+                let node_id = push_token(t, parent, parser);
                 parser.headings.push(node_id);
             }
             _ => {
-                let _ = push_token(t, parser, parent);
+                let _ = push_token(t, parent, parser);
             }
         };
 
         next = i;
     }
-    return next;
-}
-
-fn push_token<'a>(t: Block<'a>, parser: &mut Parser<'a>, parent: &NodeId) -> NodeId {
-    let node_id = parser
-        .tree
-        .insert(Node::new(Token::Block(t)), UnderNode(&parent))
-        .unwrap();
-    node_id
+    next
 }

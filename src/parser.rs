@@ -1,13 +1,24 @@
-use id_tree::{InsertBehavior::*, Node, Tree};
+use id_tree::{InsertBehavior::*, Node, NodeId, Tree};
 
-use crate::{block, token::Token};
+use crate::{
+    block::{parse_first_pass, parse_front_matter},
+    token::Token,
+};
 
-#[derive(Default, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Parser<'a> {
     pub tree: Tree<Token<'a>>,
+    pub definitions: Vec<NodeId>,
 }
 
 impl<'a> Parser<'a> {
+    pub fn new() -> Self {
+        Parser {
+            tree: Tree::new(),
+            definitions: vec![],
+        }
+    }
+
     pub fn ext(&mut self, input: &'a str) {
         // construct Document node as root
         let root = self
@@ -18,9 +29,12 @@ impl<'a> Parser<'a> {
         let mut next = input;
 
         // front_matter must parse first
-        next = block::parse_front_matter(next, &root, &mut self.tree);
+        next = parse_front_matter(next, &root, self);
 
         // block level first pass
-        next = block::parse_first_pass(next, &root, &mut self.tree);
+        next = parse_first_pass(next, &root, self);
+
+        // block parser should consume all input
+        assert!(next.is_empty());
     }
 }

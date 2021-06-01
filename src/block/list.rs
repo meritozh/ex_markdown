@@ -63,7 +63,7 @@ fn task_list(input: &str) -> IResult<&str, ((usize, bool), &str)> {
 #[test]
 fn list_test() {
     assert_eq!(bullet_list("- 123\n"), Ok(("", (0, "123"))));
-    assert_eq!(bullet_list("  - 123\n"), Ok(("", (2, "123"))));
+    assert_eq!(bullet_list("  - 123\n"), Ok(("", (1, "123"))));
     assert_eq!(number_list("1. asd\n"), Ok(("", ((0, 1), "asd"))));
     assert_eq!(task_list("- [ ] task\n"), Ok(("", ((0, false), "task"))));
 }

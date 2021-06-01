@@ -46,7 +46,7 @@ fn parse_block(input: &str) -> IResult<&str, Block> {
     ))(input)
 }
 
-pub fn parse_front_matter<'a>(
+pub(crate) fn parse_front_matter<'a>(
     input: &'a str,
     parent: &NodeId,
     tree: &mut Tree<Token<'a>>,
@@ -58,7 +58,7 @@ pub fn parse_front_matter<'a>(
     return input;
 }
 
-pub fn parse_first_pass<'a>(
+pub(crate) fn parse_first_pass<'a>(
     input: &'a str,
     parent: &NodeId,
     tree: &mut Tree<Token<'a>>,

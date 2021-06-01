@@ -9,6 +9,6 @@ fn toc(input: &str) -> IResult<&str, &str> {
     context("toc", terminated(tag_no_case("[toc]"), line_ending))(input)
 }
 
-pub fn parse_toc(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_toc(input: &str) -> IResult<&str, Block> {
     map(toc, |_| Block::TOC)(input)
 }

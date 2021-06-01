@@ -18,19 +18,9 @@ impl<'a> Parser<'a> {
         let mut next = input;
 
         // front_matter must parse first
-        if let Ok((i, token)) = block::parse_front_matter(next) {
-            let _ = self
-                .tree
-                .insert(Node::new(Token::Block(token)), UnderNode(&root));
-            next = i;
-        }
+        next = block::parse_front_matter(next, &root, &mut self.tree);
 
         // block level first pass
-        while let Ok((i, token)) = block::parse_first_pass(next) {
-            let _ = self
-                .tree
-                .insert(Node::new(Token::Block(token)), UnderNode(&root));
-            next = i;
-        }
+        next = block::parse_first_pass(next, &root, &mut self.tree);
     }
 }

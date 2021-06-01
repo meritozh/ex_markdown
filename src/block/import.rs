@@ -21,6 +21,6 @@ fn import_test() {
     assert_eq!(import("<<< @/filepath\n"), Ok(("", "/filepath")));
 }
 
-pub fn parse_import(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_import(input: &str) -> IResult<&str, Block> {
     map(import, |path| Block::Import(Import { path }))(input)
 }

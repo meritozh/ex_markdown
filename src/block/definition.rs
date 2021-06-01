@@ -69,7 +69,7 @@ fn definition_test() {
     assert_eq!(definition("[ref]: url\n"), Ok(("", ("ref", ("url", None)))));
 }
 
-pub fn parse_definition(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_definition(input: &str) -> IResult<&str, Block> {
     map(definition, |(label, (url, title))| {
         Block::Definition(Definition { label, url, title })
     })(input)

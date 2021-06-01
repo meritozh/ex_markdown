@@ -27,7 +27,7 @@ fn command_test() {
     );
 }
 
-pub(crate) fn parse_command(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_command(input: &str) -> IResult<&str, Block> {
     map(command, |(tag, content)| {
         Block::Command(Command { tag, content })
     })(input)

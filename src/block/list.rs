@@ -68,7 +68,7 @@ fn list_test() {
     assert_eq!(task_list("- [ ] task\n"), Ok(("", ((0, false), "task"))));
 }
 
-pub fn parse_list(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_list(input: &str) -> IResult<&str, Block> {
     alt((
         map(task_list, |((level, checked), content)| {
             Block::List(List {

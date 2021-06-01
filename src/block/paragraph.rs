@@ -18,6 +18,6 @@ fn paragraph_test() {
     assert_eq!(paragraph("test\n"), Ok(("", "test")));
 }
 
-pub fn parse_paragraph(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_paragraph(input: &str) -> IResult<&str, Block> {
     map(paragraph, |content| Block::Paragraph(Paragraph { content }))(input)
 }

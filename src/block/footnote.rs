@@ -28,7 +28,7 @@ fn footnote_test() {
     assert_eq!(footnote("[^test]: hahaha\n"), Ok(("", ("^test", "hahaha"))))
 }
 
-pub fn parse_footnote(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_footnote(input: &str) -> IResult<&str, Block> {
     map(terminated(footnote, line_ending), |(label, content)| {
         Block::Footnote(Footnote { label, content })
     })(input)

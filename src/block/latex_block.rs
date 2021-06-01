@@ -27,7 +27,7 @@ fn latex_block_test() {
     );
 }
 
-pub fn parse_latex_block(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_latex_block(input: &str) -> IResult<&str, Block> {
     map(latex_block, |content| {
         Block::LatexBlock(LatexBlock { content })
     })(input)

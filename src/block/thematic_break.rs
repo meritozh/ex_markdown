@@ -49,6 +49,6 @@ fn thematic_break_test() {
     );
 }
 
-pub fn parse_thematic_break(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_thematic_break(input: &str) -> IResult<&str, Block> {
     map(thematic_break, |_| Block::ThematicBreak)(input)
 }

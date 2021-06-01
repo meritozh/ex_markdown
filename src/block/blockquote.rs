@@ -27,7 +27,7 @@ fn blockquote_test() {
     );
 }
 
-pub fn parse_blockquote(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_blockquote(input: &str) -> IResult<&str, Block> {
     map(blockquote, |(level, content)| {
         Block::BlockQuote(BlockQuote { level, content })
     })(input)

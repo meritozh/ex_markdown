@@ -28,7 +28,7 @@ fn container_test() {
     );
 }
 
-pub fn parse_container(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_container(input: &str) -> IResult<&str, Block> {
     map(container, |(title, content)| {
         Block::Container(Container { title, content })
     })(input)

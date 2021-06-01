@@ -40,7 +40,7 @@ fn code_block_test() {
     );
 }
 
-pub fn parse_code_block(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_code_block(input: &str) -> IResult<&str, Block> {
     map(code_block, |(attributes, content)| {
         Block::CodeBlock(CodeBlock {
             attributes,

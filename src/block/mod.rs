@@ -1,35 +1,33 @@
-pub(crate) mod blank_line;
-pub(crate) mod blockquote;
-pub(crate) mod code_block;
-pub(crate) mod command;
-pub(crate) mod container;
-pub(crate) mod definition;
-pub(crate) mod footnote;
-pub(crate) mod front_matter;
-pub(crate) mod heading;
-pub(crate) mod import;
-pub(crate) mod latex_block;
-pub(crate) mod list;
-pub(crate) mod paragraph;
-pub(crate) mod thematic_break;
-pub(crate) mod toc;
+mod blank_line;
+mod blockquote;
+mod code_block;
+mod command;
+mod container;
+mod definition;
+mod footnote;
+mod front_matter;
+mod heading;
+mod import;
+mod latex_block;
+mod list;
+mod paragraph;
+mod thematic_break;
+mod toc;
 
+use id_tree::{InsertBehavior::UnderNode, Node, NodeId, Tree};
 use nom::{branch::alt, IResult};
 
-use crate::{
-    block::{
-        blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
-        command::parse_command, container::parse_container, definition::parse_definition,
-        footnote::parse_footnote, heading::parse_heading, import::parse_import,
-        latex_block::parse_latex_block, list::parse_list, paragraph::parse_paragraph,
-        thematic_break::parse_thematic_break, toc::parse_toc,
-    },
-    token::Block,
+use self::{
+    blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
+    command::parse_command, container::parse_container, definition::parse_definition,
+    footnote::parse_footnote, heading::parse_heading, import::parse_import,
+    latex_block::parse_latex_block, list::parse_list, paragraph::parse_paragraph,
+    thematic_break::parse_thematic_break, toc::parse_toc,
 };
 
-pub(crate) use self::front_matter::parse_front_matter;
+use super::token::{Block, Token};
 
-pub fn parse_first_pass(input: &str) -> IResult<&str, Block> {
+fn parse_block(input: &str) -> IResult<&str, Block> {
     alt((
         parse_thematic_break,
         parse_heading,
@@ -46,4 +44,29 @@ pub fn parse_first_pass(input: &str) -> IResult<&str, Block> {
         parse_blank_line,
         parse_paragraph,
     ))(input)
+}
+
+pub fn parse_front_matter<'a>(
+    input: &'a str,
+    parent: &NodeId,
+    tree: &mut Tree<Token<'a>>,
+) -> &'a str {
+    if let Ok((i, t)) = front_matter::parse_front_matter(input) {
+        let _ = tree.insert(Node::new(Token::Block(t)), UnderNode(&parent));
+        return i;
+    }
+    return input;
+}
+
+pub fn parse_first_pass<'a>(
+    input: &'a str,
+    parent: &NodeId,
+    tree: &mut Tree<Token<'a>>,
+) -> &'a str {
+    let mut next = input;
+    while let Ok((i, t)) = parse_block(next) {
+        let _ = tree.insert(Node::new(Token::Block(t)), UnderNode(&parent));
+        next = i;
+    }
+    return next;
 }

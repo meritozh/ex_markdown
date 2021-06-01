@@ -52,7 +52,7 @@ fn heading_test() {
     );
 }
 
-pub fn parse_heading(input: &str) -> IResult<&str, Block> {
+pub(super) fn parse_heading(input: &str) -> IResult<&str, Block> {
     map(heading, |(level, content)| {
         Block::Heading(Heading { level, content })
     })(input)

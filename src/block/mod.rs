@@ -70,10 +70,29 @@ pub(crate) fn parse_first_pass<'a>(
 ) -> &'a str {
     let mut next = input;
     while let Ok((i, t)) = parse_block(next) {
-        let _ = parser
-            .tree
-            .insert(Node::new(Token::Block(t)), UnderNode(&parent));
+        match t {
+            Block::Definition(_) => {
+                let node_id = push_token(t, parser, parent);
+                parser.definitions.push(node_id);
+            }
+            Block::Heading(_) => {
+                let node_id = push_token(t, parser, parent);
+                parser.headings.push(node_id);
+            }
+            _ => {
+                let _ = push_token(t, parser, parent);
+            }
+        };
+
         next = i;
     }
     return next;
+}
+
+fn push_token<'a>(t: Block<'a>, parser: &mut Parser<'a>, parent: &NodeId) -> NodeId {
+    let node_id = parser
+        .tree
+        .insert(Node::new(Token::Block(t)), UnderNode(&parent))
+        .unwrap();
+    node_id
 }

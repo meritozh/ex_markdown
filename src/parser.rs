@@ -9,6 +9,7 @@ use crate::{
 pub struct Parser<'a> {
     pub tree: Tree<Token<'a>>,
     pub definitions: Vec<NodeId>,
+    pub headings: Vec<NodeId>,
 }
 
 impl<'a> Parser<'a> {
@@ -16,6 +17,7 @@ impl<'a> Parser<'a> {
         Parser {
             tree: Tree::new(),
             definitions: vec![],
+            headings: vec![],
         }
     }
 

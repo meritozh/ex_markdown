@@ -17,6 +17,11 @@ mod toc;
 use id_tree::{InsertBehavior::UnderNode, Node, NodeId};
 use nom::{branch::alt, IResult};
 
+use super::{
+    token::{Block, Token},
+    Parser,
+};
+
 use self::{
     blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
     command::parse_command, container::parse_container, definition::parse_definition,
@@ -25,12 +30,7 @@ use self::{
     thematic_break::parse_thematic_break, toc::parse_toc,
 };
 
-use super::{
-    token::{Block, Token},
-    Parser,
-};
-
-fn parse_block(input: &str) -> IResult<&str, Block> {
+pub(crate) fn parse_block(input: &str) -> IResult<&str, Block> {
     alt((
         parse_thematic_break,
         parse_heading,
@@ -49,50 +49,12 @@ fn parse_block(input: &str) -> IResult<&str, Block> {
     ))(input)
 }
 
-fn push_token<'a>(t: Block<'a>, parent: &NodeId, parser: &mut Parser<'a>) -> NodeId {
-    let node_id = parser
-        .tree
-        .insert(Node::new(Token::Block(t)), UnderNode(&parent))
-        .unwrap();
-    node_id
-}
-
-pub(crate) fn parse_front_matter<'a>(
-    input: &'a str,
-    parent: &NodeId,
-    parser: &mut Parser<'a>,
-) -> &'a str {
-    if let Ok((i, t)) = front_matter::parse_front_matter(input) {
+pub(crate) fn parse_front_matter<'a>(parser: &mut Parser<'a>, parent: &NodeId) -> &'a str {
+    if let Ok((i, t)) = front_matter::parse_front_matter(parser.text) {
         let _ = parser
             .tree
             .insert(Node::new(Token::Block(t)), UnderNode(&parent));
         return i;
     }
-    input
-}
-
-pub(crate) fn parse_first_pass<'a>(
-    input: &'a str,
-    parent: &NodeId,
-    parser: &mut Parser<'a>,
-) -> &'a str {
-    let mut next = input;
-    while let Ok((i, t)) = parse_block(next) {
-        match t {
-            Block::Definition(_) => {
-                let node_id = push_token(t, parent, parser);
-                parser.definitions.push(node_id);
-            }
-            Block::Heading(_) => {
-                let node_id = push_token(t, parent, parser);
-                parser.headings.push(node_id);
-            }
-            _ => {
-                let _ = push_token(t, parent, parser);
-            }
-        };
-
-        next = i;
-    }
-    next
+    parser.text
 }

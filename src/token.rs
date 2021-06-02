@@ -4,7 +4,7 @@ use bitflags::bitflags;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token<'a> {
-    Document(&'a str),
+    Document,
     Block(Block<'a>),
     Inline(Inline<'a>),
 }

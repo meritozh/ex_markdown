@@ -37,11 +37,11 @@ impl<'a> Parser<'a> {
             match t {
                 Block::Definition(_) => {
                     let node_id = self.tree.push_block(t, root);
-                    self.push_definition(node_id);
+                    self.record_definition(node_id);
                 }
                 Block::Heading(_) => {
                     let node_id = self.tree.push_block(t, root);
-                    self.push_heading(node_id);
+                    self.record_heading(node_id);
                 }
                 _ => {
                     self.tree.push_block(t, root);
@@ -95,11 +95,11 @@ impl<'a> Parser<'a> {
         });
     }
 
-    fn push_definition(&mut self, node_id: NodeId) {
+    fn record_definition(&mut self, node_id: NodeId) {
         self.definitions.push(node_id);
     }
 
-    fn push_heading(&mut self, node_id: NodeId) {
+    fn record_heading(&mut self, node_id: NodeId) {
         self.headings.push(node_id);
     }
 }

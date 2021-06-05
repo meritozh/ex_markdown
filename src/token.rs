@@ -113,7 +113,6 @@ pub enum Inline<'a> {
     Emphasis(Emphasis<'a>),
     Mark(Mark<'a>),
     Strikethrough(Strikethrough<'a>),
-    Underline(Underline<'a>),
     Diff(Diff<'a>),
     Image(Image<'a>),
     Ruby(Ruby<'a>),
@@ -158,11 +157,6 @@ pub struct Mark<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Strikethrough<'a> {
-    pub content: &'a str,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Underline<'a> {
     pub content: &'a str,
 }
 

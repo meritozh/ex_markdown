@@ -14,13 +14,9 @@ mod text;
 
 mod shared;
 
-use id_tree::NodeId;
 use nom::{branch::alt, IResult};
 
-use super::{
-    token::{Block, Inline, Token},
-    Parser,
-};
+use super::token::Inline;
 
 use self::{
     diff::parse_diff, image::parse_image, latex::parse_latex, link::parse_link, mark::parse_mark,
@@ -29,7 +25,7 @@ use self::{
     text::parse_text,
 };
 
-fn parse_inline(input: &str) -> IResult<&str, Inline> {
+pub(crate) fn parse_inline(input: &str) -> IResult<&str, Inline> {
     alt((
         parse_diff,
         parse_latex,
@@ -44,31 +40,4 @@ fn parse_inline(input: &str) -> IResult<&str, Inline> {
         parse_superscript,
         parse_text,
     ))(input)
-}
-
-pub(crate) fn parse(root: &NodeId, parser: &mut Parser) {
-    let blocks = parser.tree.children(root).unwrap();
-    blocks.for_each(|token| {
-        let b = token.data();
-
-        if let Token::Block(b) = b {
-            match b {
-                Block::FrontMatter(_) => todo!(),
-                Block::Paragraph(_) => todo!(),
-                Block::BlockQuote(_) => todo!(),
-                Block::List(_) => todo!(),
-                Block::Heading(_) => todo!(),
-                Block::Import(_) => todo!(),
-                Block::Command(_) => todo!(),
-                Block::CodeBlock(_) => todo!(),
-                Block::LatexBlock(_) => todo!(),
-                Block::Definition(_) => todo!(),
-                Block::Footnote(_) => todo!(),
-                Block::Container(_) => todo!(),
-                Block::BlankLine => todo!(),
-                Block::ThematicBreak => todo!(),
-                Block::TOC => todo!(),
-            }
-        }
-    });
 }

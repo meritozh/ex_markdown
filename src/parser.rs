@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
     fn parse_second_pass(&mut self, root: &NodeId) {
         let mut inlines = vec![];
 
-        let blocks = self.tree.children_ids(root).unwrap().to_owned();
+        let blocks = self.tree.children_ids(root).unwrap();
 
         blocks.for_each(|node_id| {
             let b = self.tree.get(&node_id).unwrap().data();
@@ -117,13 +117,13 @@ impl<'a> PushToken<'a> for Tree<Token<'a>> {
         self.insert(Node::new(Token::Document), AsRoot).unwrap()
     }
 
-    fn push_inline(&mut self, t: Inline<'a>, parent: &NodeId) -> NodeId {
-        self.insert(Node::new(Token::Inline(t)), UnderNode(parent))
+    fn push_block(&mut self, t: Block<'a>, parent: &NodeId) -> NodeId {
+        self.insert(Node::new(Token::Block(t)), UnderNode(parent))
             .unwrap()
     }
 
-    fn push_block(&mut self, t: Block<'a>, parent: &NodeId) -> NodeId {
-        self.insert(Node::new(Token::Block(t)), UnderNode(parent))
+    fn push_inline(&mut self, t: Inline<'a>, parent: &NodeId) -> NodeId {
+        self.insert(Node::new(Token::Inline(t)), UnderNode(parent))
             .unwrap()
     }
 }

@@ -49,6 +49,7 @@ pub(crate) fn parse_block(input: &str) -> IResult<&str, Block> {
     ))(input)
 }
 
+// TODO(gaowanqiu): do not pass in parser and tree node
 pub(crate) fn parse_front_matter<'a>(parser: &mut Parser<'a>, parent: &NodeId) -> &'a str {
     if let Ok((i, t)) = front_matter::parse_front_matter(parser.text) {
         let _ = parser

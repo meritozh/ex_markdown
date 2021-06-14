@@ -62,20 +62,21 @@ impl<'a> Parser<'a> {
             let b = self.tree.get(&node_id).unwrap().data();
 
             if let Token::Block(b) = b {
+                println!("{:?}", b);
                 match b {
-                    Block::BlockQuote(_) => todo!(),
-                    Block::List(_) => todo!(),
-                    Block::Heading(_) => todo!(),
-                    Block::Import(_) => todo!(),
-                    Block::Command(_) => todo!(),
-                    Block::CodeBlock(_) => todo!(),
-                    Block::LatexBlock(_) => todo!(),
-                    Block::Definition(_) => todo!(),
-                    Block::Footnote(_) => todo!(),
-                    Block::Container(_) => todo!(),
-                    Block::BlankLine => todo!(),
-                    Block::ThematicBreak => todo!(),
-                    Block::TOC => todo!(),
+                    // Block::BlockQuote(_) => todo!(),
+                    // Block::List(_) => todo!(),
+                    // Block::Heading(_) => todo!(),
+                    // Block::Import(_) => todo!(),
+                    // Block::Command(_) => todo!(),
+                    // Block::CodeBlock(_) => todo!(),
+                    // Block::LatexBlock(_) => todo!(),
+                    // Block::Definition(_) => todo!(),
+                    // Block::Footnote(_) => todo!(),
+                    // Block::Container(_) => todo!(),
+                    // Block::BlankLine => todo!(),
+                    // Block::ThematicBreak => todo!(),
+                    // Block::TOC => todo!(),
                     Block::Paragraph(paragraph) => {
                         let mut next = paragraph.content;
                         while let Ok((i, t)) = parse_inline(next) {
@@ -86,8 +87,6 @@ impl<'a> Parser<'a> {
                     _ => {}
                 }
             }
-
-            unreachable!();
         });
 
         inlines.into_iter().for_each(|(t, ref node_id)| {

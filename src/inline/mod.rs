@@ -95,11 +95,8 @@ pub(crate) fn parse(input: &str) -> Vec<Inline> {
                 // update i
                 i = r;
             }
-        } else if let Ok((next, leading)) = take_until_parser_matches(parse_emphasis)(i) {
-            if let Ok((r, t)) = parse_emphasis(next) {
-                if let Ok((_, t)) = parse_text(leading) {
-                    tokens.push(t);
-                }
+        } else {
+            if let Ok((r, t)) = parse_text(i) {
                 tokens.push(t);
                 i = r;
             }

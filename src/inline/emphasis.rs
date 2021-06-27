@@ -105,7 +105,6 @@ fn truncate_until_matched_delimiter<'a>(
             stack.0.push(Delimiter {
                 delimiter: decrease_delimiter_count(matched.delimiter, x - y),
                 slice: input.slice(offset + x - y..),
-                active: true,
             });
 
             let offset = s.offset(o);
@@ -131,7 +130,6 @@ fn stack(input: &str) -> IResult<&str, EmphasisStack> {
                 stack.0.push(Delimiter {
                     delimiter: t,
                     slice: o,
-                    active: true,
                 });
                 i = o;
                 // next loop
@@ -163,7 +161,6 @@ fn stack(input: &str) -> IResult<&str, EmphasisStack> {
                 stack.0.push(Delimiter {
                     delimiter: t,
                     slice: o,
-                    active: true,
                 });
                 i = o;
                 // next loop

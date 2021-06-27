@@ -80,7 +80,6 @@ fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
             stack.0.push(Delimiter {
                 delimiter: t,
                 slice: o,
-                active: true,
             });
             i = o;
             continue;

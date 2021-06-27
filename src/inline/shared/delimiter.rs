@@ -14,7 +14,6 @@ pub(crate) enum DelimiterType {
 pub(crate) struct Delimiter<'a> {
     pub delimiter: DelimiterType,
     pub slice: &'a str,
-    pub active: bool,
 }
 
 #[derive(Default, Debug)]

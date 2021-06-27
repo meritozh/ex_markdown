@@ -31,7 +31,10 @@ impl<'a> Parser<'a> {
 
     fn parse_first_pass(&mut self, root: &NodeId) {
         // must parse frontmatter first.
-        parse_front_matter(self, root);
+        if let Ok((i, t)) = parse_front_matter(self.text) {
+            self.tree.push_block(t, root);
+            self.remaining = i;
+        }
 
         while let Ok((i, t)) = parse_block(self.remaining) {
             match t {

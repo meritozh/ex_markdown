@@ -5,6 +5,7 @@ authors = ["meritozh <ah841814092@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-nom = "6.1.2"
+nom = "6.2.0"
 bitflags = "1.2.1"
 id_tree = "1.8.0"
+static_init = "1.0.1"

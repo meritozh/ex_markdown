@@ -25,7 +25,9 @@ fn mark(input: &str) -> IResult<&str, char> {
 }
 
 fn left_flank(input: &str) -> IResult<&str, DelimiterType> {
+    // peek first mark
     let i = take_until_parser_matches(mark)(input)?.0;
+    // get the mark
     let ch = mark(i)?.1;
 
     terminated(
@@ -119,7 +121,7 @@ fn truncate_until_matched_delimiter<'a>(
 fn stack(input: &str) -> IResult<&str, EmphasisStack> {
     let mut emphasises = EmphasisStack::new();
     let mut stack = DelimiterStack::default();
-    let mut i = input.clone();
+    let mut i = input;
 
     while eof::<_, Error<&str>>(i).is_err() {
         if stack.0.is_empty() {
@@ -132,9 +134,10 @@ fn stack(input: &str) -> IResult<&str, EmphasisStack> {
                     active: true,
                 });
                 i = o;
+                // next loop
                 continue;
             }
-            // cannot find, just break, return Err finally
+            // cannot find, just break, will return Err finally
             break;
         } else {
             // stack is not empty, so we try to find right flank
@@ -150,6 +153,7 @@ fn stack(input: &str) -> IResult<&str, EmphasisStack> {
                     let (r, em) = truncate_until_matched_delimiter(input, o, &mut stack, &t, index);
                     i = r;
                     emphasises.push(em);
+                    // next loop
                     continue;
                 }
             }
@@ -162,9 +166,11 @@ fn stack(input: &str) -> IResult<&str, EmphasisStack> {
                     active: true,
                 });
                 i = o;
+                // next loop
                 continue;
             }
         }
+        // unpair, just break
         break;
     }
 
@@ -201,7 +207,7 @@ fn emphasis_test() {
     );
 }
 
-pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
+pub fn parse_emphasis(input: &str) -> IResult<&str, Inline> {
     map(emphasis, |r| {
         r.iter()
             .map(|(content, style)| {
@@ -210,6 +216,9 @@ pub fn parse_emphasis(input: &str) -> IResult<&str, Vec<Inline>> {
                     style: *style,
                 })
             })
-            .collect()
+            // only pop outer emphasis token
+            .last()
+            // SAFETY: emphasis checked, r is not empty
+            .unwrap()
     })(input)
 }

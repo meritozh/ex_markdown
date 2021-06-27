@@ -1,3 +1,5 @@
+#![feature(impl_trait_in_bindings)]
+
 mod block;
 mod inline;
 mod parser;

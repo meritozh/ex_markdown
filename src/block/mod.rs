@@ -14,13 +14,9 @@ mod paragraph;
 mod thematic_break;
 mod toc;
 
-use id_tree::{InsertBehavior::UnderNode, Node, NodeId};
 use nom::{branch::alt, IResult};
 
-use super::{
-    token::{Block, Token},
-    Parser,
-};
+use super::token::Block;
 
 use self::{
     blank_line::parse_blank_line, blockquote::parse_blockquote, code_block::parse_code_block,
@@ -30,6 +26,7 @@ use self::{
     thematic_break::parse_thematic_break, toc::parse_toc,
 };
 
+#[inline]
 pub(crate) fn parse_block(input: &str) -> IResult<&str, Block> {
     alt((
         parse_thematic_break,
@@ -49,13 +46,7 @@ pub(crate) fn parse_block(input: &str) -> IResult<&str, Block> {
     ))(input)
 }
 
-// TODO(gaowanqiu): do not pass in parser and tree node
-pub(crate) fn parse_front_matter<'a>(parser: &mut Parser<'a>, parent: &NodeId) -> &'a str {
-    if let Ok((i, t)) = front_matter::parse_front_matter(parser.text) {
-        let _ = parser
-            .tree
-            .insert(Node::new(Token::Block(t)), UnderNode(&parent));
-        return i;
-    }
-    parser.text
+#[inline]
+pub(crate) fn parse_front_matter(input: &str) -> IResult<&str, Block> {
+    front_matter::parse_front_matter(input)
 }

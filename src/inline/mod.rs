@@ -14,15 +14,23 @@ mod text;
 
 mod shared;
 
-use nom::{branch::alt, IResult};
+use std::collections::HashMap;
+
+use nom::{
+    branch::alt, bytes::streaming::take_till, combinator::eof, error::Error, AsChar, IResult,
+};
+
+use static_init::dynamic;
+
+use crate::utils::nom_extend::take_until_parser_matches;
 
 use super::token::Inline;
 
 use self::{
-    diff::parse_diff, image::parse_image, latex::parse_latex, link::parse_link, mark::parse_mark,
-    reference::parse_reference, ruby::parse_ruby, span::parse_span,
-    strikethrough::parse_strikethrough, subscript::parse_subscript, superscript::parse_superscript,
-    text::parse_text,
+    diff::parse_diff, emphasis::parse_emphasis, image::parse_image, latex::parse_latex,
+    link::parse_link, mark::parse_mark, reference::parse_reference, ruby::parse_ruby,
+    span::parse_span, strikethrough::parse_strikethrough, subscript::parse_subscript,
+    superscript::parse_superscript, text::parse_text,
 };
 
 pub(crate) fn parse_inline(input: &str) -> IResult<&str, Inline> {
@@ -36,8 +44,67 @@ pub(crate) fn parse_inline(input: &str) -> IResult<&str, Inline> {
         parse_ruby,
         parse_span,
         parse_strikethrough,
-        parse_subscript,
-        parse_superscript,
+        // parse_subscript,
+        // parse_superscript,
         parse_text,
     ))(input)
+}
+
+type Parser = fn(&str) -> IResult<&str, Inline>;
+
+#[dynamic(lazy)]
+static FAST_PARSER_MAP: HashMap<char, Parser> = {
+    let mut map: HashMap<char, Parser> = HashMap::new();
+
+    map.insert('+', parse_diff);
+    map.insert('-', parse_diff);
+    map.insert('`', parse_span);
+    map.insert('$', parse_latex);
+    map.insert('!', parse_image);
+    map.insert('[', parse_link);
+    map.insert('~', parse_strikethrough);
+    map.insert('=', parse_mark);
+    map.insert('{', parse_ruby);
+    map.insert('*', parse_emphasis);
+    map.insert('_', parse_emphasis);
+
+    map
+};
+
+pub(crate) fn parse(input: &str) -> Vec<Inline> {
+    let mut tokens = vec![];
+    let mut i = input;
+
+    while eof::<_, Error<&str>>(i).is_err() {
+        // fast finding proper parser
+        if let Ok((next, leading)) =
+            take_till::<_, _, Error<&str>>(|c| FAST_PARSER_MAP.contains_key(&c))(i)
+        {
+            // get the parser
+            let c = next.as_bytes()[0].as_char();
+            let &p = FAST_PARSER_MAP.get(&c).unwrap();
+
+            // if parser can handle it
+            if let Ok((r, t)) = p(next) {
+                // push leading as Inline::Text
+                if let Ok((_, t)) = parse_text(leading) {
+                    tokens.push(t);
+                }
+                // push established token
+                tokens.push(t);
+                // update i
+                i = r;
+            }
+        } else if let Ok((next, leading)) = take_until_parser_matches(parse_emphasis)(i) {
+            if let Ok((r, t)) = parse_emphasis(next) {
+                if let Ok((_, t)) = parse_text(leading) {
+                    tokens.push(t);
+                }
+                tokens.push(t);
+                i = r;
+            }
+        }
+    }
+
+    tokens
 }

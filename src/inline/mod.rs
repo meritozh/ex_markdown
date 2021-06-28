@@ -22,8 +22,6 @@ use nom::{
 
 use static_init::dynamic;
 
-use crate::utils::nom_extend::take_until_parser_matches;
-
 use super::token::Inline;
 
 use self::{
@@ -33,45 +31,33 @@ use self::{
     superscript::parse_superscript, text::parse_text,
 };
 
-pub(crate) fn parse_inline(input: &str) -> IResult<&str, Inline> {
-    alt((
-        parse_diff,
-        parse_latex,
-        parse_link,
-        parse_image,
-        parse_mark,
-        parse_reference,
-        parse_ruby,
-        parse_span,
-        parse_strikethrough,
-        // parse_subscript,
-        // parse_superscript,
-        parse_text,
-    ))(input)
-}
-
 type Parser = fn(&str) -> IResult<&str, Inline>;
 
 #[dynamic(lazy)]
 static FAST_PARSER_MAP: HashMap<char, Parser> = {
     let mut map: HashMap<char, Parser> = HashMap::new();
 
+    let parse_link_or_ref: Parser = |input| alt((parse_link, parse_reference))(input);
+
+    let parse_strike_or_sub: Parser = |input| alt((parse_strikethrough, parse_subscript))(input);
+
     map.insert('+', parse_diff);
     map.insert('-', parse_diff);
     map.insert('`', parse_span);
     map.insert('$', parse_latex);
     map.insert('!', parse_image);
-    map.insert('[', parse_link);
-    map.insert('~', parse_strikethrough);
+    map.insert('[', parse_link_or_ref);
+    map.insert('~', parse_strike_or_sub);
     map.insert('=', parse_mark);
     map.insert('{', parse_ruby);
+    map.insert('^', parse_superscript);
     map.insert('*', parse_emphasis);
     map.insert('_', parse_emphasis);
 
     map
 };
 
-pub(crate) fn parse(input: &str) -> Vec<Inline> {
+pub(crate) fn parse_inline(input: &str) -> Vec<Inline> {
     let mut tokens = vec![];
     let mut i = input;
 

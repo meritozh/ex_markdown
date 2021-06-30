@@ -38,7 +38,6 @@ static FAST_PARSER_MAP: HashMap<char, Parser> = {
     let mut map: HashMap<char, Parser> = HashMap::new();
 
     let parse_link_or_ref: Parser = |input| alt((parse_link, parse_reference))(input);
-
     let parse_strike_or_sub: Parser = |input| alt((parse_strikethrough, parse_subscript))(input);
 
     map.insert('+', parse_diff);

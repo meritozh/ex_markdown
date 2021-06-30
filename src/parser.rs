@@ -67,42 +67,84 @@ impl<'a> Parser<'a> {
                         if self.tree.need_pass_down(node_id) {
                             match self.tree.get(&node_id).unwrap().data() {
                                 Token::Block(b) => match b {
-                                    // Block::FrontMatter(_) => todo!(),
-                                    // Block::BlockQuote(_) => todo!(),
-                                    // Block::List(_) => todo!(),
-                                    // Block::Heading(_) => todo!(),
-                                    // Block::Import(_) => todo!(),
-                                    // Block::Command(_) => todo!(),
-                                    // Block::CodeBlock(_) => todo!(),
-                                    // Block::LatexBlock(_) => todo!(),
-                                    // Block::Definition(_) => todo!(),
-                                    // Block::Footnote(_) => todo!(),
-                                    // Block::Container(_) => todo!(),
-                                    // Block::BlankLine => todo!(),
-                                    // Block::ThematicBreak => todo!(),
-                                    // Block::TOC => todo!(),
+                                    Block::BlockQuote(blockquote) => {
+                                        let tokens = parse_inline(blockquote.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
+                                    Block::List(list) => {
+                                        let tokens = parse_inline(list.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
                                     Block::Paragraph(paragraph) => {
                                         let tokens = parse_inline(paragraph.content);
                                         tokens.into_iter().for_each(|t| {
                                             inlines.push((t, node_id.clone()));
                                         });
                                     }
-                                    _ => {}
+                                    _ => unreachable!(),
                                 },
                                 Token::Inline(i) => match i {
-                                    // Inline::Text(_) => todo!(),
-                                    // Inline::Link(_) => todo!(),
-                                    // Inline::Emphasis(_) => todo!(),
-                                    // Inline::Mark(_) => todo!(),
-                                    // Inline::Strikethrough(_) => todo!(),
-                                    // Inline::Diff(_) => todo!(),
-                                    // Inline::Image(_) => todo!(),
-                                    // Inline::Ruby(_) => todo!(),
-                                    // Inline::Span(_) => todo!(),
-                                    // Inline::Reference(_) => todo!(),
-                                    // Inline::Subscript(_) => todo!(),
-                                    // Inline::Superscript(_) => todo!(),
-                                    // Inline::Latex(_) => todo!(),
+                                    // TODO: Link cannot embed another Link
+                                    Inline::Link(link) => {
+                                        let tokens = parse_inline(link.label);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                        if let Some(title) = link.title {
+                                            let tokens = parse_inline(title);
+                                            tokens.into_iter().for_each(|t| {
+                                                inlines.push((t, node_id.clone()));
+                                            });
+                                        }
+                                    }
+                                    Inline::Mark(mark) => {
+                                        let tokens = parse_inline(mark.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
+                                    Inline::Diff(diff) => {
+                                        let tokens = parse_inline(diff.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
+                                    // TODO: Ruby cannot embed another Ruby
+                                    Inline::Ruby(ruby) => {
+                                        let tokens = parse_inline(ruby.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
+                                    // TODO: Image cannot embed another Image
+                                    Inline::Image(image) => {
+                                        let tokens = parse_inline(image.label);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                        if let Some(title) = image.title {
+                                            let tokens = parse_inline(title);
+                                            tokens.into_iter().for_each(|t| {
+                                                inlines.push((t, node_id.clone()));
+                                            });
+                                        }
+                                    }
+                                    Inline::Emphasis(emphasis) => {
+                                        let tokens = parse_inline(emphasis.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
+                                    Inline::Strikethrough(strikethrough) => {
+                                        let tokens = parse_inline(strikethrough.content);
+                                        tokens.into_iter().for_each(|t| {
+                                            inlines.push((t, node_id.clone()));
+                                        });
+                                    }
                                     _ => {}
                                 },
                                 _ => unreachable!(),
@@ -162,7 +204,23 @@ impl<'a> PushToken<'a> for Tree<Token<'a>> {
         if let Ok(t) = self.get(node_id) {
             return match t.data() {
                 Token::Document => true,
-                Token::Block(_) => true,
+                Token::Block(b) => match b {
+                    Block::List(_) => true,
+                    Block::Paragraph(_) => true,
+                    Block::BlockQuote(_) => true,
+                    Block::TOC => false,
+                    Block::Import(_) => false,
+                    Block::BlankLine => false,
+                    Block::Heading(_) => false,
+                    Block::Command(_) => false,
+                    Block::Footnote(_) => false,
+                    Block::Container(_) => false,
+                    Block::CodeBlock(_) => false,
+                    Block::Definition(_) => false,
+                    Block::LatexBlock(_) => false,
+                    Block::ThematicBreak => false,
+                    Block::FrontMatter(_) => false,
+                },
                 Token::Inline(i) => match i {
                     Inline::Link(_) => true,
                     Inline::Mark(_) => true,

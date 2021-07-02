@@ -154,14 +154,10 @@ impl<'a> Parser<'a> {
                 }
             });
 
-            pending = inlines
-                .iter()
-                .filter(|(_, node_id)| self.tree.need_pass_down(node_id))
-                .map(|(_, node_id)| node_id.clone())
-                .collect();
-
+            pending.clear();
             inlines.into_iter().for_each(|(t, ref node_id)| {
-                self.tree.push_inline(t, node_id);
+                let node_id = self.tree.push_inline(t, node_id);
+                pending.push(node_id);
             });
         }
     }

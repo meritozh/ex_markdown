@@ -9,7 +9,7 @@ use nom::{
 
 use crate::token::{Block, LatexBlock};
 
-fn latex_block<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
+fn latex_block(input: &str) -> IResult<&str, &str> {
     context(
         "latex block",
         preceded(

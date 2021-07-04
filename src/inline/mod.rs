@@ -80,11 +80,9 @@ pub(crate) fn parse_inline(input: &str) -> Vec<Inline> {
                 // update i
                 i = r;
             }
-        } else {
-            if let Ok((r, t)) = parse_text(i) {
-                tokens.push(t);
-                i = r;
-            }
+        } else if let Ok((r, t)) = parse_text(i) {
+            tokens.push(t);
+            i = r;
         }
     }
 

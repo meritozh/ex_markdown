@@ -37,7 +37,7 @@ fn destionation(input: &str) -> IResult<&str, &str> {
 fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
     // TODO: support balanced parentheses
     let (remain, content) = delimited(char('('), take_until(")"), char(')'))(input)?;
-    let len = content.split_whitespace().collect::<Vec<_>>().len();
+    let len = content.split_whitespace().count();
     match len {
         1 => Ok((remain, (content, None))),
         2 => pair(

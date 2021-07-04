@@ -32,7 +32,7 @@ fn destionation(input: &str) -> IResult<&str, &str> {
 }
 
 fn destination_and_title(input: &str) -> IResult<&str, (&str, Option<&str>)> {
-    let len = input.split_whitespace().collect::<Vec<_>>().len();
+    let len = input.split_whitespace().count();
     match len {
         1 => Ok(("", (input, None))),
         2 => pair(

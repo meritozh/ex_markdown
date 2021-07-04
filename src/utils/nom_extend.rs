@@ -13,7 +13,7 @@ where
     Error: ParseError<Input>,
 {
     move |input: Input| {
-        let i = input.clone();
+        let i = input;
         for (ind, _) in i.iter_indices() {
             let (remaining, _taken) = i.take_split(ind);
             match f.parse(remaining) {
@@ -48,7 +48,7 @@ where
     Error: ParseError<Input>,
 {
     move |input: Input| {
-        let i = input.clone();
+        let i = input;
         for (ind, _) in i.iter_indices() {
             let (remaining, taken) = i.take_split(ind);
             match f.parse(remaining) {

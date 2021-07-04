@@ -65,7 +65,7 @@ impl<'a> Parser<'a> {
                 if let Ok(children) = self.tree.children_ids(node_id) {
                     children.for_each(|node_id| {
                         if self.tree.need_pass_down(node_id) {
-                            match self.tree.get(&node_id).unwrap().data() {
+                            match self.tree.get(node_id).unwrap().data() {
                                 Token::Block(b) => match b {
                                     Block::BlockQuote(blockquote) => {
                                         let tokens = parse_inline(blockquote.content);
@@ -234,6 +234,6 @@ impl<'a> PushToken<'a> for Tree<Token<'a>> {
                 },
             };
         }
-        return false;
+        false
     }
 }

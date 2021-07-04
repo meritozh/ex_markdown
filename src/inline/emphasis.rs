@@ -79,24 +79,24 @@ fn truncate_until_matched_delimiter<'a>(
 
     // left and right frank count, messy logic start
     let left_count = get_delimiter_associate_count(&matched.delimiter);
-    let right_count = get_delimiter_associate_count(&right_delimiter);
+    let right_count = get_delimiter_associate_count(right_delimiter);
 
     match (left_count, right_count) {
         // left < right, so we need forward left (left - right)
         (x, y) if x < y => {
             let offset = s.offset(o) - (y - x);
-            return (
+            (
                 s.slice(offset..),
                 (s.slice(..offset - x), count_to_emphasis(left_count)),
-            );
+            )
         }
         // left == right, all thing is perfect
         (x, y) if x == y => {
             let offset = s.offset(o);
-            return (
+            (
                 s.slice(offset..),
                 (s.slice(..offset - x), count_to_emphasis(left_count)),
-            );
+            )
         }
         // left > right, we need push new delimiter with new associated count
         (x, y) if x > y => {
@@ -108,10 +108,10 @@ fn truncate_until_matched_delimiter<'a>(
             });
 
             let offset = s.offset(o);
-            return (
+            (
                 s.slice(offset..),
                 (s.slice(..offset - y), count_to_emphasis(left_count)),
-            );
+            )
         }
         _ => unreachable!(),
     }

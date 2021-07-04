@@ -33,6 +33,7 @@ pub fn parse_ruby(input: &str) -> IResult<&str, Inline> {
         Inline::Ruby(Ruby {
             content,
             annotation,
+            ..Default::default()
         })
     })(input)
 }

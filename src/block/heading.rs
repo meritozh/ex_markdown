@@ -54,6 +54,10 @@ fn heading_test() {
 
 pub(super) fn parse_heading(input: &str) -> IResult<&str, Block> {
     map(heading, |(level, content)| {
-        Block::Heading(Heading { level, content })
+        Block::Heading(Heading {
+            level,
+            content,
+            ..Default::default()
+        })
     })(input)
 }

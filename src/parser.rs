@@ -1,9 +1,7 @@
-use id_tree::{InsertBehavior::*, Node, NodeId, Tree};
-
 use crate::{
     block::{parse_block, parse_front_matter},
     inline::parse_inline,
-    token::{Block, Inline, Token},
+    token::{Block, Definition, Document, Heading, Inline, Token},
 };
 
 #[derive(Debug, PartialEq, Default)]
@@ -11,9 +9,9 @@ pub struct Parser<'a> {
     pub text: &'a str,
     pub remaining: &'a str,
 
-    pub tree: Tree<Token<'a>>,
-    pub definitions: Vec<NodeId>,
-    pub headings: Vec<NodeId>,
+    pub tree: Document<'a>,
+    pub definitions: Vec<&'a Definition<'a>>,
+    pub headings: Vec<&'a Heading<'a>>,
 }
 
 impl<'a> Parser<'a> {
@@ -22,32 +20,29 @@ impl<'a> Parser<'a> {
         self.text = input;
         self.remaining = input;
 
-        // construct Document node as root
-        let root = self.tree.push_document();
-
-        self.parse_first_pass(&root);
-        self.parse_second_pass(&root);
+        self.parse_first_pass();
+        // self.parse_second_pass(&root);
     }
 
-    fn parse_first_pass(&mut self, root: &NodeId) {
+    fn parse_first_pass(&mut self) {
         // must parse frontmatter first.
         if let Ok((i, t)) = parse_front_matter(self.text) {
-            self.tree.push_block(t, root);
+            self.tree.push_block(t);
             self.remaining = i;
         }
 
         while let Ok((i, t)) = parse_block(self.remaining) {
             match t {
                 Block::Definition(_) => {
-                    let node_id = self.tree.push_block(t, root);
-                    self.record_definition(node_id);
+                    self.tree.push_block(t);
+                    // self.record_definition(d);
                 }
                 Block::Heading(_) => {
-                    let node_id = self.tree.push_block(t, root);
-                    self.record_heading(node_id);
+                    self.tree.push_block(t);
+                    // self.record_heading(h);
                 }
                 _ => {
-                    self.tree.push_block(t, root);
+                    self.tree.push_block(t);
                 }
             };
             self.remaining = i;
@@ -56,7 +51,8 @@ impl<'a> Parser<'a> {
         assert!(self.remaining.is_empty());
     }
 
-    fn parse_second_pass(&mut self, root: &NodeId) {
+    fn parse_second_pass(&mut self, root: &Document) {
+        /*
         let mut pending = vec![root.clone()];
         while !pending.is_empty() {
             let mut inlines = vec![];
@@ -160,80 +156,71 @@ impl<'a> Parser<'a> {
                 pending.push(node_id);
             });
         }
+        */
     }
 
-    fn record_definition(&mut self, node_id: NodeId) {
-        self.definitions.push(node_id);
+    fn record_definition(&mut self, node_id: &'a Definition) {
+        self.definitions.push(&node_id);
     }
 
-    fn record_heading(&mut self, node_id: NodeId) {
+    fn record_heading(&mut self, node_id: &'a Heading) {
         self.headings.push(node_id);
     }
 }
 
 trait PushToken<'a> {
-    fn push_document(&mut self) -> NodeId;
+    fn push_block(&mut self, t: Block<'a>);
 
-    fn push_block(&mut self, t: Block<'a>, parent: &NodeId) -> NodeId;
+    fn push_inline(&mut self, t: Inline<'a>);
 
-    fn push_inline(&mut self, t: Inline<'a>, parent: &NodeId) -> NodeId;
-
-    fn need_pass_down(&self, node: &NodeId) -> bool;
+    fn need_pass_down(&self, node: &Token<'a>) -> bool;
 }
 
-impl<'a> PushToken<'a> for Tree<Token<'a>> {
-    fn push_document(&mut self) -> NodeId {
-        self.insert(Node::new(Token::Document), AsRoot).unwrap()
+impl<'a> PushToken<'a> for Document<'a> {
+    fn push_block(&mut self, t: Block<'a>) {
+        self.subtree.push(t)
     }
 
-    fn push_block(&mut self, t: Block<'a>, parent: &NodeId) -> NodeId {
-        self.insert(Node::new(Token::Block(t)), UnderNode(parent))
-            .unwrap()
+    fn push_inline(&mut self, t: Inline<'a>) {
+        // self.insert(Node::new(Token::Inline(t)), UnderNode(parent))
+        //     .unwrap()
     }
 
-    fn push_inline(&mut self, t: Inline<'a>, parent: &NodeId) -> NodeId {
-        self.insert(Node::new(Token::Inline(t)), UnderNode(parent))
-            .unwrap()
-    }
-
-    fn need_pass_down(&self, node_id: &NodeId) -> bool {
-        if let Ok(t) = self.get(node_id) {
-            return match t.data() {
-                Token::Document => true,
-                Token::Block(b) => match b {
-                    Block::List(_) => true,
-                    Block::Paragraph(_) => true,
-                    Block::BlockQuote(_) => true,
-                    Block::TableOfContent => false,
-                    Block::Import(_) => false,
-                    Block::BlankLine => false,
-                    Block::Heading(_) => false,
-                    Block::Command(_) => false,
-                    Block::Footnote(_) => false,
-                    Block::Container(_) => false,
-                    Block::CodeBlock(_) => false,
-                    Block::Definition(_) => false,
-                    Block::LatexBlock(_) => false,
-                    Block::ThematicBreak => false,
-                    Block::FrontMatter(_) => false,
-                },
-                Token::Inline(i) => match i {
-                    Inline::Link(_) => true,
-                    Inline::Mark(_) => true,
-                    Inline::Diff(_) => true,
-                    Inline::Ruby(_) => true,
-                    Inline::Image(_) => true,
-                    Inline::Emphasis(_) => true,
-                    Inline::Strikethrough(_) => true,
-                    Inline::Span(_) => false,
-                    Inline::Text(_) => false,
-                    Inline::Latex(_) => false,
-                    Inline::Reference(_) => false,
-                    Inline::Subscript(_) => false,
-                    Inline::Superscript(_) => false,
-                },
-            };
+    fn need_pass_down(&self, node_id: &Token<'a>) -> bool {
+        match node_id {
+            Token::Block(b) => match b {
+                Block::List(_) => true,
+                Block::Paragraph(_) => true,
+                Block::BlockQuote(_) => true,
+                Block::TableOfContent => false,
+                Block::Import(_) => false,
+                Block::BlankLine => false,
+                Block::Heading(_) => false,
+                Block::Command(_) => false,
+                Block::Footnote(_) => false,
+                Block::Container(_) => false,
+                Block::CodeBlock(_) => false,
+                Block::Definition(_) => false,
+                Block::LatexBlock(_) => false,
+                Block::ThematicBreak => false,
+                Block::FrontMatter(_) => false,
+            },
+            Token::Inline(i) => match i {
+                Inline::Link(_) => true,
+                Inline::Mark(_) => true,
+                Inline::Diff(_) => true,
+                Inline::Ruby(_) => true,
+                Inline::Image(_) => true,
+                Inline::Emphasis(_) => true,
+                Inline::Strikethrough(_) => true,
+                Inline::Span(_) => false,
+                Inline::Text(_) => false,
+                Inline::Latex(_) => false,
+                Inline::Reference(_) => false,
+                Inline::Subscript(_) => false,
+                Inline::Superscript(_) => false,
+            },
+            _ => false,
         }
-        false
     }
 }

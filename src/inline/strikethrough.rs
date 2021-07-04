@@ -44,6 +44,9 @@ fn strikethrough_test() {
 
 pub fn parse_strikethrough(input: &str) -> IResult<&str, Inline> {
     map(strikethrough, |content| {
-        Inline::Strikethrough(Strikethrough { content })
+        Inline::Strikethrough(Strikethrough {
+            content,
+            ..Default::default()
+        })
     })(input)
 }

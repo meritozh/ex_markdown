@@ -2,9 +2,13 @@ use std::usize;
 
 use bitflags::bitflags;
 
+#[derive(Debug, PartialEq, Eq, Default)]
+pub struct Document<'a> {
+    pub subtree: Vec<Block<'a>>,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token<'a> {
-    Document,
     Block(Block<'a>),
     Inline(Inline<'a>),
 }
@@ -40,15 +44,24 @@ pub struct FrontMatter<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Paragraph<'a> {
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct BlockQuote<'a> {
     pub level: usize,
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
+}
+
+#[derive(Debug, PartialEq, Eq, Default)]
+pub struct Footnote<'a> {
+    pub label: &'a str,
+    pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -58,23 +71,25 @@ pub enum ListStyle {
     Task(bool),
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Footnote<'a> {
-    pub label: &'a str,
-    pub content: &'a str,
+impl Default for ListStyle {
+    fn default() -> Self {
+        Self::Bullet
+    }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct List<'a> {
     pub style: ListStyle,
     pub level: usize,
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Heading<'a> {
     pub level: usize,
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -82,7 +97,6 @@ pub struct Import<'a> {
     pub path: &'a str,
 }
 
-/// TODO: is Command duplicated with Container?
 #[derive(Debug, PartialEq, Eq)]
 pub struct Command<'a> {
     pub tag: &'a str,
@@ -125,6 +139,7 @@ pub enum Inline<'a> {
 }
 
 bitflags! {
+    #[derive(Default)]
     pub struct EmphasisStyle : u8 {
         const BOLD = 0b001;
         const ITALIC = 0b010;
@@ -132,10 +147,11 @@ bitflags! {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Emphasis<'a> {
     pub content: &'a str,
     pub style: EmphasisStyle,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -150,15 +166,16 @@ pub struct Link<'a> {
     pub title: Option<&'a str>,
 }
 
-// TODO: consider support custom color?
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Mark<'a> {
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Strikethrough<'a> {
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -167,10 +184,17 @@ pub enum DiffStyle {
     Minus,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+impl Default for DiffStyle {
+    fn default() -> Self {
+        Self::Minus
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Diff<'a> {
     pub style: DiffStyle,
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -180,10 +204,11 @@ pub struct Image<'a> {
     pub title: Option<&'a str>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Ruby<'a> {
     pub annotation: &'a str,
     pub content: &'a str,
+    pub subtree: Vec<Inline<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

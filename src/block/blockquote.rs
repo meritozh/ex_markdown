@@ -29,6 +29,10 @@ fn blockquote_test() {
 
 pub(super) fn parse_blockquote(input: &str) -> IResult<&str, Block> {
     map(blockquote, |(level, content)| {
-        Block::BlockQuote(BlockQuote { level, content })
+        Block::BlockQuote(BlockQuote {
+            level,
+            content,
+            ..Default::default()
+        })
     })(input)
 }

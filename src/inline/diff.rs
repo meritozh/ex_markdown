@@ -49,6 +49,10 @@ fn diff_test() {
 
 pub fn parse_diff(input: &str) -> IResult<&str, Inline> {
     map(diff, |(content, style)| {
-        Inline::Diff(Diff { style, content })
+        Inline::Diff(Diff {
+            style,
+            content,
+            ..Default::default()
+        })
     })(input)
 }

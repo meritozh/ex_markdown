@@ -34,5 +34,10 @@ fn mark_test() {
 }
 
 pub fn parse_mark(input: &str) -> IResult<&str, Inline> {
-    map(mark, |content| Inline::Mark(Mark { content }))(input)
+    map(mark, |content| {
+        Inline::Mark(Mark {
+            content,
+            ..Default::default()
+        })
+    })(input)
 }

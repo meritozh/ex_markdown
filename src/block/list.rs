@@ -75,6 +75,7 @@ pub(super) fn parse_list(input: &str) -> IResult<&str, Block> {
                 style: ListStyle::Task(checked),
                 level,
                 content,
+                ..Default::default()
             })
         }),
         map(bullet_list, |(level, content)| {
@@ -82,6 +83,7 @@ pub(super) fn parse_list(input: &str) -> IResult<&str, Block> {
                 style: ListStyle::Bullet,
                 level,
                 content,
+                ..Default::default()
             })
         }),
         map(number_list, |((level, digit), content)| {
@@ -89,6 +91,7 @@ pub(super) fn parse_list(input: &str) -> IResult<&str, Block> {
                 style: ListStyle::Number(digit),
                 level,
                 content,
+                ..Default::default()
             })
         }),
     ))(input)

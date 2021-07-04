@@ -19,5 +19,10 @@ fn paragraph_test() {
 }
 
 pub(super) fn parse_paragraph(input: &str) -> IResult<&str, Block> {
-    map(paragraph, |content| Block::Paragraph(Paragraph { content }))(input)
+    map(paragraph, |content| {
+        Block::Paragraph(Paragraph {
+            content,
+            ..Default::default()
+        })
+    })(input)
 }

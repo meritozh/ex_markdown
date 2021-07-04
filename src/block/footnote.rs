@@ -30,6 +30,10 @@ fn footnote_test() {
 
 pub(super) fn parse_footnote(input: &str) -> IResult<&str, Block> {
     map(terminated(footnote, line_ending), |(label, content)| {
-        Block::Footnote(Footnote { label, content })
+        Block::Footnote(Footnote {
+            label,
+            content,
+            ..Default::default()
+        })
     })(input)
 }

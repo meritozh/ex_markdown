@@ -211,6 +211,7 @@ pub fn parse_emphasis(input: &str) -> IResult<&str, Inline> {
                 Inline::Emphasis(Emphasis {
                     content,
                     style: *style,
+                    ..Default::default()
                 })
             })
             // only pop outer emphasis token

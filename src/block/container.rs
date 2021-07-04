@@ -9,7 +9,7 @@ use nom::{
 
 use crate::token::{Block, Container};
 
-fn container<'a>(input: &'a str) -> IResult<&'a str, (&'a str, &'a str)> {
+fn container(input: &str) -> IResult<&str, (&str, &str)> {
     context(
         "container",
         tuple((

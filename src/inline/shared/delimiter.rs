@@ -20,17 +20,17 @@ pub(crate) struct Delimiter<'a> {
 pub(crate) struct DelimiterStack<'a>(pub(crate) Vec<Delimiter<'a>>);
 
 pub(crate) fn is_same_delimiter_type(a: &DelimiterType, b: &DelimiterType) -> bool {
-    match (a, b) {
-        (&DelimiterType::Asterisk(_), &DelimiterType::Asterisk(_)) => true,
-        (&DelimiterType::Underline(_), &DelimiterType::Underline(_)) => true,
-        _ => false,
-    }
+    matches!(
+        (a, b),
+        (&DelimiterType::Asterisk(_), &DelimiterType::Asterisk(_))
+            | (&DelimiterType::Underline(_), &DelimiterType::Underline(_))
+    )
 }
 
 pub(crate) fn get_delimiter_associate_count(d: &DelimiterType) -> usize {
-    match d {
-        &DelimiterType::Asterisk(x) => x,
-        &DelimiterType::Underline(x) => x,
+    match *d {
+        DelimiterType::Asterisk(x) => x,
+        DelimiterType::Underline(x) => x,
         _ => unreachable!(),
     }
 }

@@ -204,7 +204,7 @@ impl<'a> PushToken<'a> for Tree<Token<'a>> {
                     Block::List(_) => true,
                     Block::Paragraph(_) => true,
                     Block::BlockQuote(_) => true,
-                    Block::TOC => false,
+                    Block::TableOfContent => false,
                     Block::Import(_) => false,
                     Block::BlankLine => false,
                     Block::Heading(_) => false,

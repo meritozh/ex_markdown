@@ -10,5 +10,5 @@ fn toc(input: &str) -> IResult<&str, &str> {
 }
 
 pub(super) fn parse_toc(input: &str) -> IResult<&str, Block> {
-    map(toc, |_| Block::TOC)(input)
+    map(toc, |_| Block::TableOfContent)(input)
 }

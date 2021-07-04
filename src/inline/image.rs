@@ -75,7 +75,7 @@ fn close_bracket(input: &str) -> IResult<&str, ()> {
 fn stack(input: &str) -> IResult<&str, (&str, (&str, Option<&str>))> {
     let mut inner_close_bracket = 0;
     let mut stack = DelimiterStack::default();
-    let mut i = input.clone();
+    let mut i = input;
 
     while eof::<_, Error<&str>>(i).is_err() {
         if let Ok((o, t)) = open_bracket(i) {

@@ -9,6 +9,7 @@ pub enum Token<'a> {
     Inline(Inline<'a>),
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum Block<'a> {
     FrontMatter(FrontMatter<'a>),
@@ -25,7 +26,7 @@ pub enum Block<'a> {
     Container(Container<'a>),
     BlankLine,
     ThematicBreak,
-    TOC,
+    TableOfContent,
 }
 
 #[derive(Debug, PartialEq, Eq)]

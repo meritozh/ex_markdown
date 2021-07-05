@@ -7,12 +7,6 @@ pub struct Document<'a> {
     pub subtree: Vec<Block<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Token<'a> {
-    Block(Block<'a>),
-    Inline(Inline<'a>),
-}
-
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum Block<'a> {

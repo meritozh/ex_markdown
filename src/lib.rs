@@ -13,7 +13,8 @@ pub fn parse_markdown(input: &str) -> Result {
     let mut parser = Parser::default();
     parser.ext(input);
 
-    println!("{:#?}", parser.tree);
+    let json = serde_json::to_string_pretty(&parser.tree).unwrap();
+    println!("{}", json);
 
     Ok(())
 }

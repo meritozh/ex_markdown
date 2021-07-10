@@ -1,14 +1,15 @@
 use std::usize;
 
 use bitflags::bitflags;
+use serde::Serialize;
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Debug, PartialEq, Eq, Default)]
 pub struct Document<'a> {
     pub subtree: Vec<Block<'a>>,
 }
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub enum Block<'a> {
     FrontMatter(FrontMatter<'a>),
     Paragraph(Paragraph<'a>),
@@ -27,38 +28,38 @@ pub enum Block<'a> {
     TableOfContent,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Container<'a> {
     pub title: &'a str,
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct FrontMatter<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Paragraph<'a> {
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct BlockQuote<'a> {
     pub level: usize,
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Footnote<'a> {
     pub label: &'a str,
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub enum ListStyle {
     Number(u8),
     Bullet,
@@ -71,7 +72,7 @@ impl Default for ListStyle {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct List<'a> {
     pub style: ListStyle,
     pub level: usize,
@@ -79,43 +80,43 @@ pub struct List<'a> {
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Heading<'a> {
     pub level: usize,
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Import<'a> {
     pub path: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Command<'a> {
     pub tag: &'a str,
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct CodeBlock<'a> {
     pub attributes: Vec<&'a str>,
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct LatexBlock<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Definition<'a> {
     pub label: &'a str,
     pub url: &'a str,
     pub title: Option<&'a str>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub enum Inline<'a> {
     Text(Text<'a>),
     Link(Link<'a>),
@@ -133,7 +134,7 @@ pub enum Inline<'a> {
 }
 
 bitflags! {
-    #[derive(Default)]
+    #[derive(Default, Serialize)]
     pub struct EmphasisStyle : u8 {
         const BOLD = 0b001;
         const ITALIC = 0b010;
@@ -141,38 +142,38 @@ bitflags! {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Emphasis<'a> {
     pub content: &'a str,
     pub style: EmphasisStyle,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Text<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Link<'a> {
     pub label: &'a str,
     pub url: &'a str,
     pub title: Option<&'a str>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Mark<'a> {
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Strikethrough<'a> {
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub enum DiffStyle {
     Plus,
     Minus,
@@ -184,48 +185,48 @@ impl Default for DiffStyle {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Diff<'a> {
     pub style: DiffStyle,
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Image<'a> {
     pub label: &'a str,
     pub url: &'a str,
     pub title: Option<&'a str>,
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize)]
 pub struct Ruby<'a> {
     pub annotation: &'a str,
     pub content: &'a str,
     pub subtree: Vec<Inline<'a>>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Span<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Reference<'a> {
     pub label: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Subscript<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Superscript<'a> {
     pub content: &'a str,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Latex<'a> {
     pub content: &'a str,
 }
